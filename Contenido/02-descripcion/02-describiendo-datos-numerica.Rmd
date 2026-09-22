@@ -1,0 +1,1577 @@
+---
+title: "Naturaleza de la información: descripción de datos numérico"
+subtitle: "Diplomado en Economía Aplicada: Estadística Aplicada"
+author: "Luis Fernando Escobar — lfernandoescobarc@gmail.com<br>Business School - UAGRM"
+date: "Septiembre 2026"
+output:
+  xaringan::moon_reader:
+    css: ['default', 'metropolis', 'metropolis-fonts', 'my-css.css']
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: inverse, middle
+
+```{r Setup, include = F}
+options(htmltools.dir.version = FALSE)
+library(pacman)
+p_load(
+  broom, ggplot2, ggthemes, dplyr, knitr, tibble
+)
+# Definir color rosa
+red_pink <- "#e64173"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+# Opciones de knitr
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 6,
+  fig.width = 9,
+  warning = F,
+  message = F
+)
+theme_axes <- theme_minimal() + theme(
+  text = element_text(size = 16),
+  panel.grid.minor = element_blank(),
+  legend.position = "none"
+)
+```
+
+# Prólogo
+
+---
+# Describiendo datos: Numérico
+
+.pseudocode-small[
+
+**1** Medidas de tendencia central y ubicación
+  - Media, mediana y moda
+  - Forma de una distribución
+  - Media geométrica
+  - Percentiles y cuartiles
+
+**2** Medidas de variabilidad
+  - Rango y rango intercuartílico
+  - Diagramas de caja y bigotes
+  - Varianza y desviación estándar
+  - Coeficiente de variación
+  - Teorema de Chebyshev y la regla empírica
+  - Puntuación z (z-score)
+
+**3** Media ponderada y medidas para datos agrupados
+
+**4** Medidas de relación entre variables
+  - Caso de estudio: Cartera hipotecaria
+
+]
+
+---
+class: inverse, middle
+
+# Introducción
+
+---
+# Introducción
+
+Primeramente describimos los datos .hi[gráficamente], observando que se usan diferentes gráficos para variables categóricas y numéricas.
+
+--
+
+En esta sección describimos los datos .hi[numéricamente] y observamos que se usan diferentes medidas numéricas para datos categóricos y numéricos.
+
+--
+
+Además, discutimos medidas para .hi[datos agrupados] y medidas de la .hi[dirección] y .hi[fuerza] de las relaciones entre dos variables.
+
+---
+layout: true
+# Medidas de tendencia central
+---
+class: inverse, middle
+---
+
+Una de las primeras preguntas básicas que se hacen investigadores, economistas, ejecutivos corporativos, funcionarios de gobierno, y cualquiera con datos de una muestra es si los datos .hi[tienden a centrarse] o ubicarse alrededor de un valor particular.
+
+--
+
+Ya vimos una respuesta gráfica a esta pregunta: los histogramas nos dan una imagen visual de la forma de una distribución.
+
+--
+
+En esta sección presentamos medidas numéricas—la .hi[media], la .hi[mediana], y la .hi[moda]—como respuesta a preguntas sobre la ubicación del centro de un conjunto de datos.
+
+--
+
+También estudiamos un tipo especial de media llamada la .hi[media geométrica]. Estas medidas se conocen como .hi[medidas de tendencia central].
+
+---
+
+A menudo preguntamos sobre la ubicación o posición de un valor .hi[relativo al conjunto completo de datos].
+
+--
+
+Respondemos este tipo de pregunta examinando medidas de ubicación como .hi[percentiles] y .hi[cuartiles].
+
+--
+
+Otra medida de ubicación, llamada .hi[puntuación z] (z-score), examina la ubicación de un valor relativo a la .hi[media] de la distribución.
+
+---
+layout: true
+# Medidas de tendencia central
+
+---
+
+Ya introdujimos los términos .hi[parámetro] y .hi[estadístico].
+
+- Un **parámetro** se refiere a una característica específica de la **población**.
+- Un **estadístico** se refiere a una característica específica de la **muestra**.
+
+--
+
+Las medidas de tendencia central usualmente se calculan a partir de datos de muestra en vez de datos poblacionales. La primera que viene a la mente es la .hi[media aritmética], usualmente llamada simplemente la **media**, o **promedio**.
+
+---
+
+### Media aritmética
+
+La media aritmética (o simplemente media) de un conjunto de datos es la suma de los valores dividida entre el número de observaciones.
+
+Si el conjunto de datos es la población entera, la **media poblacional**, $\mu$, es un parámetro dado por
+
+$$ \mu = \dfrac{\sum_{i=1}^{N} x_i}{N} = \dfrac{x_1 + x_2 + \cdots + x_N}{N} $$
+
+donde $N$ = tamaño de la población.
+
+---
+
+Si el conjunto de datos proviene de una muestra, la **media muestral**, $\bar{x}$, es un estadístico dado por
+
+$$ \bar{x} = \dfrac{\sum_{i=1}^{n} x_i}{n} $$
+
+donde $n$ = tamaño de la muestra. .hi[La media es apropiada para datos numéricos].
+
+---
+
+### Mediana
+
+La mediana es la observación .hi[central] de un conjunto de observaciones ordenadas de forma creciente (o decreciente).
+
+--
+
+- Si el tamaño de muestra $n$ es **impar**, la mediana es la observación central.
+- Si el tamaño de muestra $n$ es **par**, la mediana es el promedio de las dos observaciones centrales.
+
+--
+
+La mediana será el número ubicado en la posición
+
+$$ 0.5(n+1)\text{-ésima posición ordenada} $$
+
+Para ubicar la mediana, debemos ordenar los datos de forma creciente o decreciente.
+
+---
+
+### Moda
+
+La moda, si existe, es el valor que ocurre .hi[con mayor frecuencia].
+
+--
+
+- Una distribución con una moda se llama **unimodal**.
+- Con dos modas, se llama **bimodal**.
+- Con más de dos modas, se dice **multimodal**.
+
+--
+
+La moda se usa más comúnmente con .hi[datos categóricos].
+
+---
+layout: true
+# Medidas de tendencia central 
+
+---
+## Ejemplo: Demanda de agua embotellada
+La demanda de agua embotellada aumenta durante la temporada de verano en Santa Cruz. El número de botellas de 1 galón de agua vendidas para una muestra aleatoria de $n=12$ horas en una tienda durante la temporada de verano es:
+
+```{R, ex21 data}
+agua <- c(60, 84, 65, 67, 75, 72, 80, 85, 63, 82, 70, 75)
+agua
+```
+
+Describe la tendencia central de los datos.
+
+---
+
+**Solución:** El promedio o número medio por hora de botellas de 1 galón demandadas se encuentra así:
+
+$$ \bar{x} = \dfrac{\sum_{i=1}^{n} x_i}{n} = \dfrac{60 + 84 + \cdots + 75}{12} = 73.17 $$
+
+```{R, ex21 mean}
+mean(agua)
+```
+
+---
+
+A continuación, ordenamos los datos de ventas de menor a mayor:
+
+```{R, ex21 sort}
+sort(agua)
+```
+
+La mediana de ventas se ubica en la posición $0.5(12+1) = 6.5$; es decir, la mediana está a medio camino entre el 6º y 7º dato ordenado: $(72+75)/2 = 73.5$ botellas.
+
+```{R, ex21 median}
+median(agua)
+```
+
+La moda es claramente .hi[75 botellas].
+
+---
+layout: true
+# Medidas de tendencia central 
+---
+
+La decisión sobre si la media, la mediana o la moda es la medida apropiada para describir la tendencia central de los datos .hi[depende del contexto].
+
+--
+
+Un factor que influye en nuestra elección es el .hi[tipo de dato], categórico o numérico.
+
+--
+
+Los .hi[datos categóricos] se describen mejor con la mediana o la moda, no con la media. Si una persona está muy de acuerdo (codificada 5) con una afirmación y otra está muy en desacuerdo (codificada 1), ¿es la media "sin opinión"?
+
+--
+
+Un uso obvio de la mediana y la moda es en minoristas de ropa que consideran el inventario de zapatos, camisas, etc. El tamaño vendido con más frecuencia—la moda—es el de mayor demanda.
+
+---
+
+Saber que la talla media de camisa de los hombres europeos es 41.13, o que el número de zapato promedio de las mujeres estadounidenses es 8.24, es .hi[inútil], pero saber que la talla modal de camisa es 40 o el número modal de zapato es 7 es .hi[valioso] para decisiones de inventario.
+
+--
+
+Sin embargo, la moda puede no representar el verdadero centro de los datos numéricos. Por esta razón, la moda se usa .hi[con menos frecuencia] que la media o la mediana en aplicaciones de negocios.
+
+---
+layout: true
+# Medidas de tendencia central
+
+---
+
+## Ejemplo: Cambio porcentual en utilidad por acción
+
+Encuentra la media, mediana y moda para una muestra aleatoria de ocho corporaciones asiáticas con los siguientes cambios porcentuales en utilidad por acción del año actual respecto al año anterior:
+
+```{R, ex22 data}
+eps <- c(5, 5, 8.1, 13.6, 23.2, 20.7, 12.0, 14.2)
+eps
+```
+
+**Solución:** El cambio porcentual medio en utilidad por acción para esta muestra es
+
+$$ \bar{x} = \dfrac{\sum_{i=1}^{n} x_i}{n} = \dfrac{5 + 5 + 8.1 + 13.6 + \cdots + 14.2}{8} = 12.73\% $$
+
+---
+
+```{R, ex22 stats}
+mean(eps)
+median(eps)
+table(eps)
+```
+
+y el cambio porcentual mediano en utilidad por acción es 12.8%. La moda es 5%, ya que ocurre dos veces y los demás porcentajes ocurren solo una vez.
+
+--
+
+Pero esta moda .hi[no representa] el centro de esta muestra de datos.
+
+---
+layout: true
+# Medidas de tendencia central 
+---
+
+Los datos numéricos usualmente se describen mejor con la .hi[media]. Sin embargo, además del tipo de dato, otro factor a considerar es la presencia de .hi[valores atípicos] (*outliers*)—observaciones inusualmente grandes o pequeñas.
+
+--
+
+- La **mediana no es afectada** por los valores atípicos, pero la **media sí**.
+- Cuando hay valores atípicos, primero debemos buscar posibles causas (p. ej., un error de captura de datos).
+- La media será mayor si hay valores atípicos inusualmente grandes, y será menor cuando los datos contengan valores atípicos inusualmente pequeños.
+
+---
+layout: true
+# Medidas de tendencia central
+
+---
+## Forma de una distribución
+
+Ya describimos gráficamente la forma de una distribución como .hi[simétrica] o .hi[sesgada] examinando un histograma.
+
+--
+
+Si el centro de los datos divide la gráfica de la distribución en dos imágenes espejo, la distribución se dice **simétrica**. Las gráficas sin esta forma son **asimétricas**.
+
+--
+
+También se puede describir la forma de una distribución numéricamente calculando una medida de .hi[sesgo] (skewness).
+
+--
+
+- **Positivo:** sesgada a la derecha.
+- **Negativo:** sesgada a la izquierda.
+- **Cero:** distribuciones en forma de campana, simétricas alrededor de su media.
+
+---
+
+Para datos numéricos continuos y unimodales:
+
+- En una distribución **sesgada a la izquierda**, la media es usualmente **menor** que la mediana.
+- En una distribución **sesgada a la derecha**, la media es usualmente **mayor** que la mediana.
+- En una distribución **simétrica**, la media y la mediana son **iguales**.
+
+--
+
+Esta relación puede no cumplirse para variables numéricas discretas o para algunas variables continuas (von Hippel 2005).
+
+---
+layout: true
+# Medidas de tendencia central 
+
+---
+## Ejemplo: Promedios de calificaciones (GPA)
+
+Describe la forma de la distribución de promedios de calificaciones (GPA, **Grade Point Averages**).
+
+Se tiene una muestra aleatoria de 156 de estudiantes de una universidad.
+
+```{R, gpa sim, echo = F}
+set.seed(2024)
+gpa <- pmin(pmax(rnorm(156, mean = 3.14, sd = 0.36) + rbeta(156, 2, 6) * -0.3, 2.12), 3.85)
+```
+
+Ya describimos la forma de esta distribución con un histograma, que resultó sesgada a la izquierda.
+
+```{R, gpa hist, echo = F, fig.height = 3.5}
+ggplot(data = tibble(gpa = gpa), aes(x = gpa)) +
+  geom_histogram(bins = 15, fill = "darkslategrey", alpha = 0.7, color = "white") +
+  labs(x = "GPA", y = "Frecuencia") +
+  theme_axes
+```
+
+---
+
+## Resumen estadístico
+
+| Medida | Valor |   | Medida | Valor |
+|---|---|---|---|---|
+| Media | 3.141154 |  | Sesgo (Skewness) | -1.1685 |
+| Error estándar | 0.029144 |  | Rango | 1.73 |
+| Mediana | 3.31 |  | Mínimo | 2.12 |
+| Moda | 3.42 |  | Máximo | 3.85 |
+| Desv. estándar | 0.364006 |  | Suma | 490.02 |
+| Varianza muestral | 0.132501 |  | Conteo | 156 |
+| Curtosis | 0.609585 |  |  |  |
+
+--
+
+El valor de la media es aproximadamente 3.14 y es **menor** que la mediana de 3.31. Además, la mediana es menor que la moda de 3.42.
+
+
+
+---
+layout: true
+# Medidas de tendencia central
+---
+
+La .hi[mediana] es la medida preferida para describir la distribución de .hi[ingresos] en una ciudad, estado o país.
+
+--
+
+La distribución de ingresos suele estar sesgada a la derecha, ya que los ingresos tienden a contener una proporción relativamente pequeña de valores altos.
+
+--
+
+Como resultado, la media de tales distribuciones es típicamente bastante más alta que la mediana. La media, inflada por los muy adinerados, da una visión demasiado optimista del bienestar económico de la comunidad.
+
+--
+
+No obstante, esto **no** implica que la mediana *siempre* deba preferirse a la media cuando la población está sesgada. 
+
+---
+layout: true
+# Medidas de tendencia central
+## Media geométrica
+---
+
+Otra medida de tendencia central importante en negocios y economía, pero a menudo pasada por alto, es la .hi[media geométrica].
+
+
+La media geométrica, $\bar{x}_g$, es la raíz $n$-ésima del producto de $n$ números:
+
+$$ \bar{x}_g = \sqrt[n]{x_1 x_2 \cdots x_n} = (x_1 x_2 \cdots x_n)^{1/n} $$
+
+La **tasa de rendimiento de la media geométrica**, $\bar{r}_g$,
+
+$$ \bar{r}_g = (x_1 x_2 \cdots x_n)^{1/n} - 1 $$
+
+da el rendimiento porcentual medio de una inversión a lo largo del tiempo.
+
+--
+
+Consideremos los números 20 y 5. La media aritmética es 12.5, pero la media geométrica de 20 y 5 es $\sqrt{100}=10$.
+
+---
+
+Analistas de negocios y economistas interesados en el .hi[crecimiento] a lo largo de varios periodos usan la media geométrica.
+
+--
+
+Aplicaciones en finanzas: interés compuesto en varios años, crecimiento total de ventas, y crecimiento poblacional.
+
+--
+
+Una pregunta importante concierne al crecimiento promedio anual que resultará en cierto crecimiento total a lo largo de varios años.
+
+---
+layout: true
+# Medidas de tendencia central
+## Ejemplo: Tasa de crecimiento anual
+---
+
+Encuentra la tasa de crecimiento anual si las ventas han crecido 25% en 5 años.
+
+--
+
+**Solución:** La tentación intuitiva pero ingenua es simplemente dividir el crecimiento total, 25%, entre el número de periodos, 5, y concluir que la tasa de crecimiento anual promedio es 5%. .hi[Este resultado es incorrecto] porque ignora el efecto compuesto del crecimiento.
+
+--
+
+Supongamos que la tasa de crecimiento anual es en realidad 5%; entonces el crecimiento total en 5 años sería
+
+$$ (1.05)(1.05)(1.05)(1.05)(1.05) = 1.2763 $$
+
+o 27.63%, no 25%.
+
+---
+
+Sin embargo, la tasa de crecimiento anual, $r$, que produciría 25% en 5 años debe satisfacer:
+
+$$ (1+r)^5 = 1.25 $$
+
+Primero, resolvemos para la media geométrica:
+
+$$ \bar{x}_g = 1 + r = (1.25)^{1/5} = 1.046 $$
+
+```{R, ex24}
+(xg <- 1.25^(1/5))
+```
+
+La tasa de crecimiento de la media geométrica es $\bar{r}_g = 0.046$, o .hi[4.6%].
+
+---
+layout: true
+# Medidas de ubicación
+## Percentiles y cuartiles
+---
+
+Los percentiles y cuartiles son medidas que indican la .hi[ubicación o posición] de un valor relativo al conjunto completo de datos.
+
+--
+
+Supón que te dicen que obtuviste el percentil 92 en tu examen de matemáticas. Esto significa que aproximadamente 92% de los estudiantes que tomaron el examen obtuvieron un puntaje menor al tuyo, y aproximadamente 8% obtuvieron un puntaje mayor.
+
+--
+
+Se usan generalmente para describir conjuntos grandes de datos, como datos de ventas, encuestas, o incluso el peso de bebés recién nacidos.
+
+--
+
+Los estadísticos **no están de acuerdo** en un único mejor método para calcular percentiles y cuartiles (Langford 2006); distintos programas (SPSS, SAS, MINITAB, R, Excel, Python) dan valores ligeramente distintos.
+
+
+---
+
+Para encontrar percentiles y cuartiles, los datos primero deben ordenarse de menor a mayor.
+
+--
+
+El **percentil $P$** es un valor tal que aproximadamente $P\%$ de las observaciones están en o por debajo de ese número. Los percentiles separan grandes conjuntos de datos ordenados en centésimos. El **percentil 50 es la mediana**.
+
+El percentil $P$ se encuentra así:
+
+$$ \text{percentil } P = \text{valor en la posición } (P/100)(n+1) $$
+
+---
+
+Los **cuartiles** son medidas descriptivas que separan grandes conjuntos de datos en cuatro partes.
+
+- El **primer cuartil**, $Q_1$, (percentil 25) separa aproximadamente el 25% menor de los datos del resto.
+- El **segundo cuartil**, $Q_2$, (percentil 50) es la mediana.
+- El **tercer cuartil**, $Q_3$, (percentil 75), separa aproximadamente el 75% menor de los datos del 25% restante (el más grande).
+
+---
+
+
+$$ Q_1 = \text{valor en la posición } 0.25(n+1) $$
+$$ Q_2 = \text{valor en la posición } 0.50(n+1) $$
+$$ Q_3 = \text{valor en la posición } 0.75(n+1) $$
+
+--
+
+
+El **resumen de cinco números** se refiere a las cinco medidas descriptivas: mínimo, primer cuartil, mediana, tercer cuartil, y máximo.
+
+$$ \text{mínimo} < Q_1 < \text{mediana} < Q_3 < \text{máximo} $$
+
+--
+
+Una gráfica del resumen de cinco números llamada .hi[diagrama de caja y bigotes] (*box-and-whisker plot*).
+
+---
+layout: true
+# Medidas de ubicación
+## Ejemplo: Demanda de agua embotellada (Cuartiles)
+---
+
+Encontramos las medidas de tendencia central para el número de botellas de 1 galón vendidas. La mediana fue 73.5 botellas. Encuentra el resumen de cinco números.
+
+**Solución:** Ordenamos los datos de menor a mayor:
+
+```{R, ex25 sort}
+sort(agua)
+```
+
+Encontramos el primer cuartil, $Q_1$:
+
+$$ Q_1 = \text{valor en la posición } 0.25(12+1) = \text{posición } 3.25 $$
+
+---
+
+El valor en la 3ª posición es 65, y en la 4ª es 67. Entonces:
+
+$$ Q_1 = 65 + 0.25(67-65) = 65 + 0.50 = 65.5 \text{ botellas} $$
+
+
+El tercer cuartil, $Q_3$, se ubica en la posición $0.75(12+1)$, es decir, la posición 9.75.
+
+El valor en la 9ª posición es 80, y en la 10ª es 82. Entonces:
+
+$$ Q_3 = 80 + 0.75(82-80) = 80 + 0.75(2) = 81.5 \text{ botellas} $$
+
+```{R, ex25 quantile}
+quantile(agua, probs = c(0.25, 0.5, 0.75), type = 6)
+```
+
+---
+
+El resumen de cinco números para estos datos es:
+
+$$ \text{Mínimo} < Q_1 < \text{mediana} < Q_3 < \text{máximo} $$
+$$ 60 < 65.5 < 73.5 < 81.5 < 85 $$
+
+---
+layout: true
+# Medidas de ubicación
+## Ejemplo: Tiempos de compras en un centro comercial
+---
+
+En un esfuerzo por aumentar las ventas en un centro comercial local, la gerencia recopiló datos sobre el tiempo que los compradores actuales pasan en el centro comercial. Se cronometró una muestra aleatoria de $n=104$ compradores. Encuentra los percentiles 25 y 85.
+
+```{R, ex26 data}
+tiempos <- c(18,34,42,37,19,37,30,40,28,34,71,18,46,42,34,30,21,23,40,37,
+             57,69,73,47,45,38,34,25,34,23,37,20,63,57,73,52,20,31,18,42,
+             25,40,21,40,57,69,71,55,33,38,30,41,18,31,34,18,63,57,70,25,
+             33,21,48,34,25,45,34,21,31,70,69,21,37,51,50,25,51,42,52,67,
+             18,68,31,37,52,52,43,45,43,18,25,70,64,23,30,19,50,59,60,60,
+             68,69,70,59)
+length(tiempos)
+```
+
+---
+
+Calculando el percentil 25:
+
+$$ \text{percentil } 25 = \text{valor en la posición } 0.25(104+1) = \text{posición } 26.25 $$
+
+El valor en la posición 26 es 28 minutos, y en la 27 es 30 minutos:
+
+$$ \text{percentil } 25 = 28 + 0.25(30-28) = 28.5 $$
+
+--
+
+De forma similar, el percentil 85 se ubica en la posición $0.85(104+1) = 89.25$. Como el valor en la posición 89 es 64 y en la 90 es 67:
+
+$$ 64 + 0.25(67-64) = 64 + 0.75 = 64.75 \text{ minutos} $$
+
+---
+
+```{R, ex26 quantile}
+quantile(tiempos, probs = c(0.25, 0.85), type = 6)
+```
+
+Aproximadamente 85% de los compradores de la muestra pasan menos de 64.75 minutos en el centro comercial.
+
+---
+layout: true
+# 2.1 Medidas de ubicación
+## Ejemplo: Índice de Alimentación Saludable–2005
+---
+
+El HEI–2005 mide qué tan bien la población sigue las recomendaciones de las *Guías Alimentarias para Estadounidenses* de 2005 (Guenther et al. 2007), en una escala de 100 puntos.
+
+--
+
+Donde **HEI Cost Data Variable Subset** contiene información de individuos seleccionados aleatoriamente que participaron en una entrevista extendida y examen médico (n=4,460 observaciones).
+
+--
+
+Encuentra el resumen de cinco números de los puntajes HEI de la primera entrevista, para hombres (código = 0) y mujeres (código = 1).
+
+**Solución** Dado el tamaño de la muestra, usamos software estadístico (p. ej., R).
+
+---
+
+**Tabla** Puntajes del Índice de Alimentación Saludable–2005: Primera entrevista (Resumen de cinco números)
+
+*Estadística descriptiva: HEI2005 (Mujeres; primera entrevista)*
+
+| Variable | N | Mínimo | $Q_1$ | Mediana | $Q_3$ | Máximo |
+|---|---|---|---|---|---|---|
+| HEI2005 | 2,321 | 11.172 | 42.420 | 53.320 | 63.907 | 92.643 |
+
+*Estadística descriptiva: HEI2005 (Hombres; primera entrevista)*
+
+| Variable | N | Mínimo | $Q_1$ | Mediana | $Q_3$ | Máximo |
+|---|---|---|---|---|---|---|
+| HEI2005 | 2,139 | 13.556 | 39.644 | 49.674 | 59.988 | 99.457 |
+
+---
+layout: false
+class: inverse, middle
+
+# Medidas de Variabilidad
+
+---
+layout: true
+# Medidas de variabilidad
+---
+
+La media por sí sola .hi[no] provee una descripción completa o suficiente de los datos. En esta sección presentamos números descriptivos que miden la .hi[variabilidad] o dispersión de las observaciones respecto a la media.
+
+--
+
+En particular, incluimos el rango, el rango intercuartílico, la varianza, la desviación estándar, y el coeficiente de variación.
+
+--
+
+No hay dos cosas exactamente iguales. La variación existe en todas las áreas: un jugador estrella puede anotar tres goles en un partido y ninguno en el siguiente; el clima varía de día a día; las calificaciones difieren entre estudiantes del mismo curso; la presión arterial, el pulso, y la ingesta calórica varían diariamente.
+
+--
+
+En los negocios, la variación se ve en ventas, costos de publicidad, porcentaje de quejas de producto, número de nuevos clientes, etc.
+
+---
+
+Aunque dos conjuntos de datos podrían tener la .hi[misma media], las observaciones individuales en un conjunto podrían variar más respecto a la media que las del otro conjunto.
+
+Considera las siguientes dos muestras:
+
+```{R, sample AB}
+muestra_A <- c(1, 2, 1, 36)
+muestra_B <- c(8, 9, 10, 13)
+mean(muestra_A); mean(muestra_B)
+```
+
+Aunque la media es 10 para ambas muestras, claramente los datos de la muestra A están .hi[más alejados] de 10 que los de la muestra B.
+
+Se necesita números descriptivos para medir esta dispersión.
+
+---
+layout: true
+# Medidas de variabilidad
+
+---
+
+## Rango y rango intercuartílico
+
+El rango es la diferencia entre la observación .hi[más grande] y la .hi[más pequeña].
+
+--
+
+Entre mayor sea la dispersión de los datos respecto al centro de la distribución, mayor será el rango.
+
+--
+
+Dado que el rango solo toma en cuenta las observaciones extremas, es susceptible a una distorsión considerable si hay una observación extrema inusual (un valor atípico).
+
+--
+
+Una forma de evitar esta dificultad es ordenar los datos, descartar algunos de los valores más altos y más bajos, y encontrar el rango de los restantes. A veces se elimina el 25% más bajo y el 25% más alto de los datos—de ahí el .hi[rango intercuartílico].
+
+---
+
+### Rango intercuartílico (IQR)
+
+El rango intercuartílico (IQR) mide la dispersión del 50% central de los datos; es la diferencia entre la observación en $Q_3$ (percentil 75) y la observación en $Q_1$ (percentil 25). Así,
+
+$$ \text{IQR} = Q_3 - Q_1 $$
+
+--
+
+En un ejemplo previo se considera una muestra de tiempos (en minutos) de $n=104$ personas comprando en un centro comercial, y encontramos que el percentil 25 era 28.5 minutos. De forma similar, el percentil 75 es 56.5 minutos. Por lo tanto:
+
+```{R, iqr shopping}
+IQR(tiempos, type = 6)
+```
+
+$$ \text{IQR} = Q_3 - Q_1 = 56.5 - 28.5 = 28 \text{ minutos} $$
+
+---
+layout: true
+# Medidas de variabilidad
+
+---
+
+## Diagrama de caja y bigotes (Box-and-Whisker Plot)
+
+Una gráfica que describe la forma de una distribución en términos del resumen de cinco números: valor mínimo, primer cuartil (percentil 25), mediana, tercer cuartil (percentil 75), y valor máximo.
+
+--
+
+- La **caja interior** muestra los números que abarcan del primer al tercer cuartil.
+- Se dibuja una **línea a través de la caja** en la mediana.
+- Hay dos **"bigotes"**: uno va del percentil 25 al valor mínimo, y el otro del percentil 75 al valor máximo.
+
+--
+
+Ya introdujimos el diagrama de tallo y hoja (*stem-and-leaf*) de Tukey. El diagrama de caja y bigotes es otra de sus gráficas de análisis exploratorio de datos, y también nos da información sobre la .hi[dispersión] de los datos.
+
+---
+layout: true
+# Medidas de variabilidad
+
+---
+## Ejemplo: Pizzería Gilotti (Box-and-Whisker Plot)
+
+La Pizzería Gilotti tiene 4 sucursales en un área metropolitana grande. Las ventas diarias (en cientos de dólares) de una muestra aleatoria de 10 días laborables de cada una de las 4 sucursales se dan a continuación.
+
+```{R, gilotti data}
+gilotti <- tibble(
+  Sucursal1 = c(6, 8, 10, 12, 14, 9, 11, 7, 13, 11),
+  Sucursal2 = c(1, 19, 2, 18, 11, 10, 3, 17, 4, 17),
+  Sucursal3 = c(2, 3, 25, 20, 22, 19, 25, 20, 22, 26),
+  Sucursal4 = c(22, 20, 10, 13, 12, 10, 11, 9, 10, 8)
+)
+gilotti
+```
+
+---
+
+**Solución:** se puede calcular fácilmente el resumen de cinco números con las ecuaciones de este capítulo, o con un paquete estadístico.
+
+```{R, gilotti summary}
+sapply(gilotti, function(x) c(Media = mean(x), Min = min(x), Q1 = quantile(x, .25, type=6),
+                               Mediana = median(x), Q3 = quantile(x, .75, type=6),
+                               Max = max(x), IQR = IQR(x, type=6), Rango = diff(range(x))))
+```
+
+---
+
+Un vistazo rápido muestra que la Sucursal 1, la Sucursal 2, y la Sucursal 4 tienen la misma mediana de ventas. Sucursal 1 y Sucursal 2 también tienen medias casi idénticas.
+
+--
+
+Sin embargo, un examen más cercano del rango y el IQR de Sucursal 1 y Sucursal 2 revela que las ventas en Sucursal 2 están .hi[dispersas en un intervalo más amplio] que las de Sucursal 1.
+
+--
+
+Nota que Sucursal 3 tiene la media de ventas más alta, pero también el rango más grande.
+
+---
+
+```{R, gilotti box, echo = F, fig.height = 4.5}
+gilotti_long <- tidyr::pivot_longer(gilotti, everything(), names_to = "Sucursal", values_to = "Ventas")
+ggplot(gilotti_long, aes(x = Sucursal, y = Ventas)) +
+  geom_boxplot(fill = "darkslategrey", alpha = 0.4) +
+  labs(y = "Ventas", x = NULL, title = "Ventas de la Pizzería Gilotti por sucursal") +
+  theme_axes
+```
+
+---
+layout: true
+# Medidas de variabilidad
+---
+
+Nota que la distribución de ventas de la Sucursal 3 está sesgada a la izquierda, indicando la presencia de días con ventas menores a la mayoría de los demás días (o quizás un error de captura de datos).
+
+--
+
+De forma similar, la distribución de ventas en Sucursal 4 está sesgada a la derecha, indicando la presencia de ventas más altas que la mayoría de los otros días.
+
+--
+
+La gerencia de la Pizzería Gilotti querrá saber más sobre la variación en ventas, tanto dentro de una sucursal dada como entre las cuatro sucursales. Esta información ayudará en su proceso de toma de decisiones.
+
+---
+layout: true
+# Medidas de variabilidad
+
+---
+
+## Varianza y desviación estándar
+
+Aunque el rango y el IQR miden la dispersión de los datos, ambas medidas solo toman en cuenta dos de los valores. Necesitamos una medida que .hi[promedie] la distancia total entre cada valor y la media.
+
+--
+
+Pero para *todo* conjunto de datos, esta suma **siempre es igual a cero**, porque la media es el centro de los datos. Si elevamos al cuadrado cada diferencia, entonces cada observación (por encima y por debajo de la media) contribuye a la suma de términos cuadrados. El promedio de esta suma se llama la .hi[varianza].
+
+---
+
+### Varianza
+
+La **varianza poblacional**, $\sigma^2$, es la suma de las diferencias al cuadrado entre cada observación y la media poblacional, dividida entre el tamaño de la población, $N$:
+
+$$ \sigma^2 = \dfrac{\sum_{i=1}^{N} (x_i - \mu)^2}{N} $$
+
+--
+
+La **varianza muestral**, $s^2$, es la suma de las diferencias al cuadrado entre cada observación y la media muestral, dividida entre el tamaño de muestra, $n$, .hi[menos 1]:
+
+$$ s^2 = \dfrac{\sum_{i=1}^{n} (x_i - \bar{x})^2}{n-1} $$
+
+---
+
+¿Por qué el denominador de la varianza muestral es $(n-1)$ y no $n$?
+
+--
+
+Si tomáramos un número muy grande de muestras, cada una de tamaño $n$, de la población, y calculáramos la varianza muestral para cada una, el .hi[promedio de todas esas varianzas muestrales] sería la varianza poblacional, $\sigma^2$.
+
+--
+
+Ya se discutió la propiedad que indica que la varianza muestral es un .hi[estimador insesgado] de $\sigma^2$ cuando se divide entre $(n-1)$ en lugar de $n$.
+
+--
+
+Calcular la varianza requiere elevar al cuadrado las distancias, lo cual cambia la unidad de medida a unidades cuadradas.
+
+--
+
+La **desviación estándar**, que es la raíz cuadrada de la varianza, restaura los datos a su unidad de medida original.
+
+---
+
+
+### Desviación estándar
+
+$$ \sigma = \sqrt{\sigma^2} = \sqrt{\dfrac{\sum_{i=1}^{N} (x_i - \mu)^2}{N}} $$
+
+La **desviación estándar muestral**, $s$, es:
+
+$$ s = \sqrt{s^2} = \sqrt{\dfrac{\sum_{i=1}^{n} (x_i - \bar{x})^2}{n-1}} $$
+
+La desviación estándar mide la dispersión .hi[promedio] alrededor de la media.
+
+---
+layout: true
+# Medidas de variabilidad
+
+---
+## Ejemplo: Ventas de la Pizzería Gilotti
+
+Calcula la desviación estándar de las ventas diarias para la Sucursal 1 de la Pizzería Gilotti:
+
+```{R, ex29 data}
+loc1 <- c(6, 8, 10, 12, 14, 9, 11, 7, 13, 11)
+```
+
+**Solución:** Se tiene que realizar lo siguiente:
+
+1. Calcula la media muestral, $\bar{x}$: es igual a 10.1.
+2. Encuentra la diferencia entre cada venta diaria y la media 10.1.
+3. Eleva al cuadrado cada diferencia.
+
+```{R, ex29 table}
+tabla29 <- tibble(
+  Ventas = loc1,
+  Desviacion = loc1 - mean(loc1),
+  Desviacion_cuad = (loc1 - mean(loc1))^2
+)
+tabla29
+```
+
+---
+
+Cálculos necesarios:
+
+$$\sum_{i=1}^{10} x_i = 101 \qquad \sum_{i=1}^{10}(x_i - \bar{x}) = 0 \qquad \sum_{i=1}^{10}(x_i-\bar{x})^2 = 60.9$$
+
+$$ s^2 = \dfrac{\sum_{i=1}^{n}(x_i-\bar{x})^2}{n-1} = \dfrac{60.9}{9} = 6.7\overline{6} $$
+
+$$ s = \sqrt{s^2} = \sqrt{6.76} \approx 2.6 $$
+
+```{R, ex29 var}
+var(loc1)
+sd(loc1)
+```
+
+---
+layout: true
+# Medidas de variabilidad
+## Fórmulas abreviadas
+---
+
+Las siguientes ecuaciones a veces se llaman fórmulas abreviadas para calcular la varianza muestral. El valor de la varianza muestral es el mismo usando la ecuación inicial.
+
+$$ s^2 = \dfrac{\sum_{i=1}^{n} x_i^2 - \dfrac{\left(\sum x_i\right)^2}{n}}{n-1} $$
+
+Alternativamente,
+
+$$ s^2 = \dfrac{\sum_{i=1}^{n} x_i^2 - n\bar{x}^2}{n-1} $$
+
+---
+layout: true
+# Medidas de variabilidad
+
+---
+
+## Ejemplo: Fórmula alternativa
+
+Calcula la varianza usando las fórmulas abreviadas:
+
+$$ \sum_{i=1}^{10} x_i = 101 \qquad \bar{x} = 10.1 $$
+
+$$ \sum x_i^2 = 6^2 + 8^2 + 10^2 + \cdots + 11^2 = 1{,}081 $$
+
+```{R, ex210}
+sum(loc1^2)
+```
+
+---
+
+Sustituyendo en la ecuación:
+
+$$ s^2 = \dfrac{1{,}081 - \left[\dfrac{(101)^2}{10}\right]}{9} = \dfrac{1{,}081 - 1{,}020.1}{9} = \dfrac{60.9}{9} = 6.7\overline{6} $$
+
+Usando la ecuación se obtiene el mismo resultado: $s^2 = 6.7\overline{6}$.
+
+---
+layout: true
+# Medidas de variabilidad
+## Ejemplo: Comparando el riesgo de dos activos (Desviación estándar)
+---
+
+Fillippa y Elin Kihlborg, dueñas de una tienda de accesorios en Estocolmo, Suecia, consideran dos alternativas de inversión: activo A y activo B. Piden ayuda a Linnéa Karlsson, una planificadora financiera.
+
+--
+
+**Solución** Linnéa sabe que la desviación estándar, $s$, es el indicador individual más común del riesgo o variabilidad de un activo. En finanzas, la fluctuación alrededor de la tasa de rendimiento real y esperada de una acción se llama el .hi[riesgo] de la acción.
+
+---
+
+**Tabla** Tasas de rendimiento: Activo A y Activo B
+
+| | Activo A | Activo B |
+|---|---|---|
+| Tasa de rendimiento media | 12.2% | 12.2% |
+| Desviación estándar de la tasa de rendimiento | 0.63 | 3.12 |
+
+--
+
+Como ambos activos tienen la misma tasa de rendimiento promedio, Linnéa compara las desviaciones estándar y determina que el .hi[activo B es más riesgoso].
+
+---
+layout: true
+# Medidas de variabilidad
+## Coeficiente de variación
+---
+
+Como las tasas medias de rendimiento del activo A y B eran iguales en el ejemplo previo, comparar desviaciones estándar era apropiado.
+
+--
+
+Ahora consideremos otra oportunidad de inversión, con dos acciones cuyos precios medios de cierre **no son iguales**. Necesitamos comparar el .hi[coeficiente de variación] en lugar de las desviaciones estándar.
+
+--
+
+El coeficiente de variación, CV, es una medida de dispersión relativa que expresa la desviación estándar como un porcentaje de la media (siempre que la media sea positiva).
+
+$$ \text{CV} = \dfrac{\sigma}{\mu} \times 100\% \quad \text{si } \mu > 0 $$
+---
+
+$$ \text{CV} = \dfrac{s}{\bar{x}} \times 100\% \quad \text{si } \bar{x} > 0 $$
+
+
+
+Si comparamos las desviaciones estándar en ventas de tiendas grandes y pequeñas que venden productos similares, la desviación estándar de las tiendas grandes casi siempre será mayor.
+
+--
+
+Una tienda grande podría modelarse como varias tiendas pequeñas juntas; comparar la variación con la desviación estándar sería engañoso. El .hi[coeficiente de variación] supera este problema ajustando por la escala de las unidades.
+
+---
+layout: true
+# Medidas de variabilidad
+## Ejemplo: Comparación de compra de acciones 
+---
+
+En el ejemplo anterior se consideraron dos inversiones con la misma tasa de rendimiento media. Ahora, Fillippa y Elin consideran comprar acciones de la Acción A o la Acción B, ambas listadas en Nasdaq Stockholm.
+
+Las desviaciones estándar resultaron considerablemente distintas: $s_A = 2.00$ y $s_B = 8.00$. ¿Deberían comprar la Acción A, ya que la desviación estándar de B es mayor?
+
+--
+
+**Solución:** El precio medio de cierre de la Acción A es 4.00, y el de la Acción B es 80.00.
+
+$$ \text{CV}_A = \dfrac{2.00}{4.00}\times 100\% = 50\% \qquad \text{CV}_B = \dfrac{8.00}{80.00}\times 100\% = 10\% $$
+
+---
+
+El coeficiente de variación nos dice que para la Acción A, la desviación estándar muestral es .hi[50%] de la media, y para la Acción B es solo .hi[10%] de la media. La Acción A .hi[fluctúa más] de un periodo a otro.
+
+---
+layout: true
+# Medidas de variabilidad
+## Teorema de Chebyshev y la regla empírica
+---
+
+El matemático ruso Pafnuty Lvovich Chebyshev (1821–1894) estableció intervalos de datos para cualquier conjunto de datos, .hi[sin importar la forma de la distribución].
+
+### Teorema de Chebyshev
+
+Para cualquier población con media $\mu$, desviación estándar $\sigma$, y $k>1$, el porcentaje de observaciones que caen dentro del intervalo $[\mu \pm k\sigma]$ es
+
+$$ \text{al menos } 100\left[1 - \left(\dfrac{1}{k^2}\right)\right]\% $$
+
+donde $k$ es el número de desviaciones estándar.
+
+---
+
+**Tabla** Valores seleccionados de $k$
+
+| $k$ | 1.5 | 2 | 2.5 | 3 |
+|---|---|---|---|---|
+| $[1-(1/k^2)]\%$ | 55.56% | 75% | — | 88.89% |
+
+--
+
+La ventaja del teorema de Chebyshev es que se aplica a **cualquier** población; pero en ello también radica su principal desventaja: para muchas poblaciones, el porcentaje real de valores en un rango dado es mucho mayor que el mínimo garantizado.
+
+---
+
+En el mundo real, muchas poblaciones grandes proveen datos .hi[acampanados] (aproximadamente simétricos), con muchos puntos agrupados alrededor de la media—la distribución en forma de campana.
+
+### Regla empírica (68%, 95%, o casi todos)
+
+Para poblaciones grandes, acampanadas, la regla empírica estima el porcentaje aproximado de observaciones contenidas dentro de una, dos, o tres desviaciones estándar de la media:
+
+- Aproximadamente **68%** de las observaciones están en $\mu \pm 1\sigma$.
+- Aproximadamente **95%** de las observaciones están en $\mu \pm 2\sigma$.
+- **Casi todas** las observaciones están en $\mu \pm 3\sigma$.
+
+---
+
+Considera un número muy grande de estudiantes que toman un examen de admisión universitaria. Supón que la media en la sección de matemáticas es 60, con desviación estándar 10.
+
+--
+
+Por la regla empírica, estimamos que aproximadamente 68% de los puntajes están entre 50 y 70, y aproximadamente 95% caen en el rango 40 a 80.
+
+--
+
+Hay solo una probabilidad relativamente pequeña de que una observación difiera de la media por más de $\pm 2\sigma$; cualquier observación que difiera de la media por más de $\pm 3\sigma$ es un .hi[valor atípico].
+
+--
+
+Se supone que la calificación media de un examen es 72, con desviación estándar 4. Según Chebyshev, al menos 75% de las calificaciones están entre 64 y 80, y al menos 88.9% están entre 60 y 84.
+
+---
+layout: true
+# Medidas de variabilidad
+## Ejemplo: Vida útil de focos
+---
+
+Una compañía produce focos (bombillas) con una vida media de 1,200 horas y desviación estándar de 50 horas.
+
+a. Describe la distribución si la forma de la población es desconocida.
+
+b. Describe la distribución si se sabe que tiene forma de campana.
+
+--
+
+Usando la media de 1,200 y la desviación estándar de 50:
+
+$$ \mu \pm 1\sigma = 1,200 \pm 50 = (1{,}150,\, 1{,}250) $$
+$$ \mu \pm 2\sigma = 1,200 \pm 2(50) = (1{,}100,\, 1{,}300) $$
+$$ \mu \pm 3\sigma = 1,200 \pm 3(50) = (1{,}050,\, 1{,}350) $$
+
+---
+
+**a.** Suponiendo que la forma es desconocida, aplicamos Chebyshev (recuerda que $k>1$): no se puede concluir nada sobre el porcentaje entre 1,150 y 1,250 horas.
+
+- Al menos .hi[75%] de los focos durarán entre 1,100 y 1,300 horas.
+- Al menos .hi[88.89%] durarán entre 1,050 y 1,350 horas.
+
+--
+
+**b.** Si la forma es de campana, entonces:
+
+- Aproximadamente .hi[68%] durarán entre 1,150 y 1,250 horas.
+- Aproximadamente .hi[95%] durarán entre 1,100 y 1,300 horas.
+- .hi[Casi todos] durarán entre 1,050 y 1,350 horas.
+
+Sería muy inusual que un foco se fundiera en, digamos, 600 o 1,600 horas—posible, pero poco probable. Estas serían .hi[valores atípicos].
+
+---
+layout: true
+# Medidas de variabilidad
+## Puntuación z (z-score)
+---
+
+Previamente se presentó percentiles y cuartiles como medida de ubicación relativa al .hi[conjunto completo] de datos. Ahora consideramos una medida llamada .hi[z-score] que examina la ubicación de un valor relativo a la .hi[media] de la distribución.
+
+
+Un z-score es un valor estandarizado que indica el número de desviaciones estándar que un valor está de la media.
+
+- Un z-score **mayor a cero** indica que el valor es mayor que la media.
+- Un z-score **menor a cero** indica que el valor es menor que la media.
+- Un z-score **igual a cero** indica que el valor es igual a la media.
+
+---
+
+Si el conjunto de datos es la población entera, y se conocen $\mu$ y $\sigma$, entonces para cada valor $x_i$:
+
+$$ z = \dfrac{x_i - \mu}{\sigma} $$
+
+---
+layout: true
+# Medidas de variabilidad
+## Ejemplo: Vida útil de focos (z-Score)
+---
+
+Se considera el ejemplo anterior, con vida media de 1,200 horas y desviación estándar de 50 horas.
+
+a. Encuentra el z-score para un foco que dura solo 1,120 horas.
+
+b. Encuentra el z-score para un foco que dura 1,300 horas.
+
+--
+
+**Solución:** Como 1,120 es menor que la media de 1,200, sabemos que el z-score correspondiente será negativo:
+
+$$ z = \dfrac{x_i - \mu}{\sigma} = \dfrac{1,120 - 1,200}{50} = -1.6 $$
+
+De forma similar, el z-score para un foco que dura 1,300 horas:
+
+$$ z = \dfrac{x_i - \mu}{\sigma} = \dfrac{1,300-1,200}{50} = 2 $$
+
+---
+
+```{R, ex214}
+(1120 - 1200) / 50
+(1300 - 1200) / 50
+```
+
+---
+layout: true
+# Medidas de variabilidad
+## Ejemplo: Exámenes de admisión universitaria 
+---
+
+El z-score estandarizado se usa a menudo en exámenes de admisión para universidades. Considera un número muy grande de estudiantes; suponemos que la media en las calificaciones es 70 con desviación estándar 8.
+
+a. Encuentra el z-score de un estudiante que obtuvo 80.
+
+b. A un estudiante le dicen que su z-score en este examen es $-1.5$. ¿Cuál fue su puntaje real?
+
+--
+
+**Solución (a)**
+
+$$ z = \dfrac{x_i - \mu}{\sigma} = \dfrac{80 - 70}{8} = 1.25 $$
+
+---
+
+**Solución (b)** Si el estudiante sabe que su z-score es $-1.5$:
+
+$$ -1.5 = \dfrac{x_i - 70}{8} \implies 8(-1.5) = x_i - 70 \implies x_i = 58 $$
+
+
+```{R, ex215}
+70 + (-1.5) * 8
+```
+
+---
+layout: false
+class: inverse, middle
+
+# Media Ponderada y Medidas de Datos Agrupados
+
+---
+layout: true
+# Media ponderada y datos agrupados
+---
+
+Algunas situaciones requieren un tipo especial de media llamada .hi[media ponderada]. Sus aplicaciones incluyen (pero no se limitan a) calcular el PPA, determinar la recomendación promedio de una acción, y aproximar la media de datos agrupados.
+
+### Media ponderada
+
+$$ \bar{x} = \dfrac{\sum w_i x_i}{n} $$
+
+donde $w_i$ = peso de la $i$-ésima observación y $n = \sum w_i$.
+
+---
+layout: true
+# Media ponderada y datos agrupados
+
+---
+## Ejemplo: Promedio de calificaciones 
+
+Un estudiante que completó 15 horas crédito en su primer semestre recibió una A, una B, una C, y una D. Usando 4 para A, 3 para B, 2 para C, 1 para D, y 0 para F, calcula el GPA del semestre.
+
+--
+
+**Solución** Si cada curso tuviera el mismo número de horas crédito, el GPA sería:
+
+$$ \bar{x} = \dfrac{4+3+2+1}{4} = 2.5 $$
+
+--
+
+Pero cada curso **no** vale el mismo número de créditos: la A fue en un curso de inglés de 3 créditos, la B en un curso de matemáticas de 3 créditos, la C en un laboratorio de biología de 4 créditos, y la D (lamentablemente) en un curso de español de 5 créditos.
+
+---
+
+$$ \bar{x} = \dfrac{(4+4+4)+(3+3+3)+(2+2+2+2)+(1+1+1+1+1)}{15} $$
+
+$$ \bar{x} = \dfrac{34}{15} = 2.267 $$
+
+---
+
+**Tabla** Registro académico del semestre
+
+| Curso | Calificación | Horas crédito, $w_i$ | Valor, $x_i$ | $w_i x_i$ |
+|---|---|---|---|---|
+| Inglés | A | 3 | 4 | 12 |
+| Matemáticas | B | 3 | 3 | 9 |
+| Lab. de biología | C | 4 | 2 | 8 |
+| Español | D | 5 | 1 | 5 |
+| **Total** | | **15** | | **34** |
+
+---
+
+```{R, ex216}
+w <- c(3, 3, 4, 5)
+x <- c(4, 3, 2, 1)
+sum(w * x) / sum(w)
+```
+
+$$ \bar{x} = \dfrac{w_1 x_1 + w_2 x_2 + \cdots}{n} = \dfrac{12+9+8+5}{15} = \dfrac{34}{15} = 2.267 $$
+
+---
+layout: true
+# Media ponderada y datos agrupados
+
+---
+## Ejemplo: Recomendación de acciones 
+
+African Investment Research (AIR), de Mekhi Kodjoe, es una firma líder de investigación de inversiones en Sudáfrica. AIR emite una de las siguientes recomendaciones con pesos correspondientes: Compra Fuerte (1), Compra Moderada (2), Mantener (3), Venta Moderada (4), o Venta Fuerte (5).
+
+--
+
+Cierto día, 10 analistas recomiendan Compra Fuerte, 3 recomiendan Compra Moderada, y 6 recomiendan Mantener. Encuentra la recomendación media.
+
+---
+
+**Tabla** Cálculo de la recomendación promedio de AIR
+
+| Acción | Nº analistas, $w_i$ | Valor, $x_i$ | $w_i x_i$ |
+|---|---|---|---|
+| Compra fuerte | 10 | 1 | 10 |
+| Compra moderada | 3 | 2 | 6 |
+| Mantener | 6 | 3 | 18 |
+| Venta moderada | 0 | 4 | 0 |
+| Venta fuerte | 0 | 5 | 0 |
+
+---
+
+```{R, ex217}
+w <- c(10, 3, 6, 0, 0)
+x <- c(1, 2, 3, 4, 5)
+(media_pond <- sum(w * x) / sum(w))
+```
+
+$$ \bar{x} = \dfrac{10+6+18+0+0}{19} = 1.79 $$
+
+--
+
+Conversión: si la media ponderada es 1, Compra Fuerte; 1.1–2.0, Compra Moderada; 2.1–3.0, Mantener; 3.1–4.0, Venta Moderada; 4.1–5, Venta Fuerte.
+
+--
+
+La media ponderada de .hi[1.79] produjo una recomendación de .hi[Compra Moderada].
+
+---
+layout: true
+# Media ponderada y datos agrupados
+## Media y varianza aproximadas para datos agrupados
+---
+
+Una encuesta puede pedir a los encuestados seleccionar una categoría de edad (p. ej., 20–29) en lugar de dar su edad específica. En estas situaciones, los valores exactos de la media y la varianza no son posibles—pero podemos .hi[aproximarlos].
+
+Se supone que los datos están agrupados en $K$ clases, con frecuencias $f_1, f_2, \ldots, f_K$. Si los puntos medios de estas clases son $m_1, m_2, \ldots, m_K$:
+
+La media es
+
+$$ \bar{x} = \dfrac{\sum_{i=1}^{K} f_i m_i}{n} $$
+
+---
+
+donde $n = \sum_{i=1}^{K} f_i$, y la varianza es
+
+$$ s^2 = \dfrac{\sum_{i=1}^{K} f_i (m_i - \bar{x})^2}{n-1} $$
+
+---
+layout: true
+# Media ponderada y datos agrupados
+## Ejemplo: Costo de compra en cafetería 
+---
+
+Clientes de cafeterías en Francia fueron encuestados aleatoriamente y se les pidió seleccionar una categoría que describiera el costo de su compra reciente:
+
+| Costo (en EUR) | 0–2 | 2–4 | 4–6 | 6–8 | 8–10 |
+|---|---|---|---|---|---|
+| Nº de clientes | 2 | 3 | 6 | 5 | 4 |
+
+Encuentra la media y desviación estándar muestrales de estos costos.
+
+---
+
+Las frecuencias son el número de clientes por categoría.
+
+**Tabla** Costo de compra (cálculo con datos agrupados)
+
+```{R, ex218}
+tabla29 <- tibble(
+  Frecuencia = c(2, 3, 6, 5, 4),
+  Punto_medio = c(1, 3, 5, 7, 9)
+) %>% mutate(fm = Frecuencia * Punto_medio)
+n <- sum(tabla29$Frecuencia)
+xbar <- sum(tabla29$fm) / n
+tabla29 <- tabla29 %>% mutate(
+  Desv = Punto_medio - xbar,
+  Desv_cuad = Desv^2,
+  f_Desv_cuad = Frecuencia * Desv_cuad
+)
+tabla29
+```
+
+---
+
+$$n = \sum_{i=1}^{K} f_i = 20 \qquad \sum_{i=1}^{K} f_i m_i = 112$$
+
+La media muestral se estima por
+
+$$ \bar{x} = \dfrac{112}{20} = 5.6 $$
+
+```{R, ex218b}
+xbar
+s2 <- sum(tabla29$f_Desv_cuad) / (n - 1)
+s2
+sqrt(s2)
+```
+
+---
+
+Como estos son datos muestrales, la varianza se estima por
+
+$$ s^2 = \dfrac{120.8}{19} = 6.3579 \qquad s = \sqrt{6.3579} = 2.52 $$
+
+Por lo tanto, el precio medio de compra se estima en .hi[€5.60], y la desviación estándar muestral en .hi[€2.52].
+
+---
+layout: false
+class: inverse, middle
+
+# Medidas de Relaciones entre Variables
+
+---
+layout: true
+# Medidas de relaciones entre variables
+---
+
+Ya introdujimos los diagramas de dispersión (*scatter plots*) como una forma gráfica de describir una relación entre dos variables.
+
+--
+
+Ahora nos introducimos en la .hi[covarianza] y la .hi[correlación], formas numéricas de describir una relación lineal.
+
+--
+
+La covarianza es una medida de la .hi[dirección] de una relación lineal entre dos variables.
+
+### Covarianza
+
+Una **covarianza poblacional** es
+
+$$\text{Cov}(x,y) = \sigma_{xy} = \dfrac{\sum_{i=1}^{N}(x_i-\mu_x)(y_i-\mu_y)}{N}$$
+
+---
+
+Una **covarianza muestral** es
+
+$$\text{Cov}(x,y) = s_{xy} = \dfrac{\sum_{i=1}^{n}(x_i-\bar{x})(y_i-\bar{y})}{n-1}$$
+
+Un valor **positivo** indica una relación lineal directa (creciente); uno **negativo**, una relación decreciente.
+
+---
+
+El valor de la covarianza varía si una variable se mide en pies o pulgadas, o el peso en libras, onzas, o kilogramos. Además, la covarianza **no** provee una medida de la .hi[fuerza] de la relación.
+
+--
+
+La medida más común para superar estas limitaciones se llama el .hi[coeficiente de correlación de Pearson] (Pearson's *r*), o simplemente el coeficiente de correlación.
+
+--
+
+Aunque se nombra en honor a Karl Pearson, fue Sir Francis Galton quien introdujo el concepto por primera vez a finales de 1800 (Salsburg 2002).
+
+---
+
+### Coeficiente de correlación
+
+Se calcula dividiendo la covarianza entre el producto de las desviaciones estándar de las dos variables.
+
+$$ \rho = \dfrac{\text{Cov}(x,y)}{\sigma_x \sigma_y} \qquad r = \dfrac{\text{Cov}(x,y)}{s_x s_y} $$
+
+Una regla útil: existe una relación si $|r| \geq \dfrac{2}{\sqrt{n}}$ 
+
+---
+
+Se puede demostrar que el coeficiente de correlación va de $-1$ a $+1$.
+
+--
+
+- Entre más cercano $r$ a $+1$: relación lineal .hi[positiva] más fuerte.
+- Entre más cercano $r$ a $-1$: relación lineal .hi[negativa] más fuerte.
+- Cuando $r=0$: no hay relación .hi[lineal]—pero no necesariamente ausencia de relación.
+
+```{R, scatter examples, echo = F, fig.height = 4.5}
+set.seed(1)
+gen <- function(r, n=25){
+  x <- rnorm(n); y <- r*x + sqrt(1-r^2)*rnorm(n)
+  tibble(x=x, y=y, r=r)
+}
+datos_r <- bind_rows(gen(-0.8), gen(-0.4), gen(0), gen(0.4), gen(0.8), gen(1.0))
+datos_r$r_lab <- factor(datos_r$r, labels = paste0("r = ", c(-0.8,-0.4,0,0.4,0.8,1.0)))
+ggplot(datos_r, aes(x, y)) + geom_point(color = "darkslategrey", alpha = 0.7) +
+  facet_wrap(~r_lab, nrow = 2) + theme_axes + theme(strip.text = element_text(size=14))
+```
+
+**Figura** Diagramas de dispersión y correlación
+
+---
+
+Nota que las ventas varían por trimestre del año, reflejando los patrones de compra de los consumidores. El coeficiente de correlación entre la variable tiempo y las ventas trimestrales es cero.
+
+--
+
+Sin embargo, podemos ver una relación estacional muy definida—.hi[pero la relación no es lineal].
+
+---
+layout: true
+# Medidas de relaciones entre variables
+## Ejemplo: Publicaciones e interacciones en Facebook
+---
+
+La revista *RELEVANT* (una revista de cultura) se mantiene en contacto e informa a sus lectores publicando actualizaciones en varias redes sociales. Marketing quiere saber si reducir publicaciones en Facebook también reduciría la interacción de sus seguidores.
+
+**Tabla** Publicaciones de Facebook e interacciones de seguidores
+
+```{R, ex219 data}
+fb <- tibble(
+  posts = c(16, 31, 27, 23, 15, 17, 17, 18, 14),
+  interacciones = c(165, 314, 280, 195, 137, 286, 199, 128, 462)
+)
+fb
+```
+
+Calcula la covarianza y correlación entre publicaciones e interacciones.
+
+---
+
+**Solución:**
+
+```{R, ex219 stats}
+mean(fb$posts); var(fb$posts)
+mean(fb$interacciones); var(fb$interacciones)
+```
+
+---
+
+$$ \bar{x} = 19.8 \quad s_x^2 = 34.694 \qquad \bar{y} = 240.7 \quad s_y^2 = 11{,}369.5 $$
+
+**Tabla** Publicaciones e interacciones (Covarianza y correlación)
+
+```{R, ex219 table}
+fb <- fb %>% mutate(
+  dx = posts - mean(posts), dy = interacciones - mean(interacciones),
+  dx2 = dx^2, dy2 = dy^2, dxdy = dx * dy
+)
+fb
+sum(fb$dxdy)
+```
+
+---
+
+Se tiene la covarianza:
+
+$$ \text{Cov}(x,y) = s_{xy} = \dfrac{652.34}{8} = 81.542 $$
+
+```{R, ex219 cov}
+cov(fb$posts, fb$interacciones)
+```
+
+Se tiene la correlación:
+
+$$ r = \dfrac{81.542}{\sqrt{34.694}\sqrt{11{,}369.5}} = 0.1298 $$
+
+---
+
+```{R, ex219 cor}
+cor(fb$posts, fb$interacciones)
+```
+
+Comparación: $|0.1298| < \dfrac{2}{\sqrt{9}} = 0.67$
+
+--
+
+Concluimos que .hi[no hay evidencia suficiente] de una relación lineal fuerte entre publicaciones de Facebook e interacción de seguidores.
+
+--
+
+Software como Minitab, Excel, SPSS, SAS, R y Python puede usarse para calcular estas medidas descriptivas.
+
+
+---
+layout: true
+# Medidas de relaciones entre variables
+---
+
+Es importante entender que la .hi[correlación no implica causalidad]. Es posible que dos variables estén altamente correlacionadas, pero eso no significa que una variable cause la otra.
+
+--
+
+Debemos tener cuidado de sacar conclusiones apresuradas basándonos en reportes de noticias, artículos de periódico, sitios web, o incluso estudios médicos que afirman que A causa B.
+
+---
+exclude: true
+
+```{R, print pdfs, echo = F, eval = T}
+pagedown::chrome_print(input = "02-describiendo-datos-numerica.html")
+```

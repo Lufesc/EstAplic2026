@@ -1,0 +1,17 @@
+base
+methods
+datasets
+utils
+grDevices
+graphics
+stats
+pacman
+leaflet
+ggplot2
+ggthemes
+viridisLite
+viridis
+dplyr
+magrittr
+knitr
+gapminder
