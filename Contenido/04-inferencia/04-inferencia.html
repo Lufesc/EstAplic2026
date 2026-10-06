@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Fundamentos de la Inferencia</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Luis Fernando Escobar — lfernandoescobarc@gmail.com Business School - UAGRM" />
+    <script src="04-inferencia_files/header-attrs/header-attrs.js"></script>
+    <link href="04-inferencia_files/remark-css/default.css" rel="stylesheet" />
+    <link href="04-inferencia_files/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="04-inferencia_files/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="my-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Fundamentos de la Inferencia
+]
+.subtitle[
+## Diplomado en Economía Aplicada: Estadística Aplicada
+]
+.author[
+### Luis Fernando Escobar — <a href="mailto:lfernandoescobarc@gmail.com" class="email">lfernandoescobarc@gmail.com</a><br>Business School - UAGRM
+]
+.date[
+### Septiembre 2026
+]
+
+---
+
+class: inverse, middle
+
+
+
+# Fundamentos de la Inferencia
+
+---
+# Contenido
+
+.pseudocode-small[
+
+**1** Estimaciones puntuales y variabilidad muestral
+
+**2** Intervalos de confianza para una proporción
+
+**3** Pruebas de hipótesis para una proporción
+
+]
+
+---
+# Introducción 
+
+La inferencia estadística se ocupa principalmente de entender y cuantificar la .hi[incertidumbre] de las estimaciones de parámetros.
+
+--
+
+Aunque las ecuaciones y detalles cambian dependiendo del contexto, los .hi[fundamentos de la inferencia] son los mismos a lo largo de toda la estadística.
+
+--
+
+Comenzamos con un tema familiar: la idea de usar una proporción muestral para estimar una proporción poblacional. Luego creamos un .hi[intervalo de confianza], un rango de valores plausibles donde podríamos encontrar el valor poblacional verdadero.
+
+--
+
+Finalmente, introducimos el marco de las .hi[pruebas de hipótesis], que nos permite evaluar formalmente afirmaciones sobre la población.
+
+---
+class: inverse, middle
+# Estimaciones puntuales y variabilidad muestral (EPyVM)
+
+---
+# EPyVM
+
+Compañías como Pew Research frecuentemente realizan encuestas para entender el estado de la opinión pública o el conocimiento sobre muchos temas. El objetivo final al hacer una encuesta es generalmente usar las respuestas para estimar la opinión o conocimiento de la población más amplia.
+
+---
+layout: true
+# EPyVM
+
+---
+## Estimaciones puntuales y error
+Supón que una encuesta sugiere que la aprobación del Presidente de EE.UU. es 45%. Consideraríamos 45% como una .hi[estimación puntual] de la aprobación que veríamos si recolectáramos respuestas de toda la población.
+
+--
+
+Esta proporción de respuesta de toda la población se llama generalmente el .hi[parámetro de interés]. Cuando el parámetro es una proporción, a menudo se denota `\(p\)`, y nos referimos a la proporción muestral como `\(\hat{p}\)` (se pronuncia "p-sombrero" o "p-hat").
+
+--
+
+A menos que recolectemos respuestas de cada individuo en la población, `\(p\)` permanece desconocido, y usamos `\(\hat{p}\)` como nuestra estimación de `\(p\)`. La diferencia que observamos de la encuesta versus el parámetro se llama el .hi[error] en la estimación.
+
+---
+
+El error generalmente consiste en dos aspectos: .hi[error muestral] y .hi[sesgo].
+
+--
+
+.hi[Error muestral] (a veces llamado incertidumbre muestral): describe cuánto tenderá a variar una estimación de una muestra a otra. Por ejemplo, la estimación de una muestra podría estar 1% demasiado baja, mientras que en otra podría estar 3% demasiado alta.
+
+--
+
+Mucho de la estadística, se enfoca en entender y cuantificar el error muestral. Nos será útil considerar el .hi[tamaño de la muestra] para cuantificar este error, usualmente representado por la letra `\(n\)`.
+
+--
+
+.hi[Sesgo]: describe una tendencia sistemática a sobre- o subestimar el valor poblacional verdadero. Por ejemplo, una encuesta preguntando sobre el apoyo a un nuevo estadio universitario, probablemente obtendríamos una estimación sesgada si redactáramos la pregunta como: "¿Apoyas a tu escuela apoyando el financiamiento del nuevo estadio?"
+
+
+
+---
+layout: true
+# EPyVM
+
+---
+## Entendiendo la variabilidad de una estimación puntual
+Supón que la proporción de adultos estadounidenses que apoya la expansión de la energía solar es `\(p=0.88\)`, nuestro parámetro de interés. Si tomáramos una encuesta de 1000 adultos, ¿qué tan cerca esperaríamos que estuviera la proporción muestral del 88%?
+
+--
+
+Podemos simular las respuestas que obtendríamos de una muestra aleatoria simple de 1000 adultos estadounidenses, ya que sabemos que el apoyo real es 0.88:
+
+- Con 250 millones de trozos de papel, escribimos "apoya" en 88% de ellos y "no" en el otro 12%.
+- Mezclamos los papeles y sacamos 1000 para representar nuestra muestra.
+
+---
+
+- Calculamos la fracción de la muestra que dice "apoya".
+
+--
+
+
+``` r
+set.seed(1)
+pop &lt;- c(rep("apoya", 0.88*250000), rep("no", 0.12*250000))
+muestra &lt;- sample(pop, size = 1000)
+(phat1 &lt;- mean(muestra == "apoya"))
+```
+
+```
+#&gt; [1] 0.881
+```
+
+En esta simulación, la muestra dio una estimación puntual de `\(\hat{p}_1\)`. Como `\(p=0.88\)`, el error fue `\(\hat{p}_1-0.88\)`.
+
+---
+
+Una simulación no es suficiente para tener una buena idea de la distribución de estimaciones que podríamos esperar, así que ejecutamos más simulaciones. Corriendo 10,000 simulaciones y creando un histograma de los resultados, obtenemos la .hi[distribución muestral].
+
+&lt;img src="04-inferencia_files/figure-html/sim many-1.png" style="display: block; margin: auto;" /&gt;
+
+Histograma de 10,000 proporciones muestrales, cada una de una población con `\(p=0.88\)` y `\(n=1000\)`.
+
+---
+
+
+``` r
+mean(phats); sd(phats)
+```
+
+```
+#&gt; [1] 0.8798545
+```
+
+```
+#&gt; [1] 0.01023533
+```
+
+--
+
+Podemos caracterizar esta distribución muestral así:
+
+--
+
+**Centro.** El centro de la distribución es `\(\bar{x}_{\hat{p}}=0.880\)`, lo mismo que el parámetro. La simulación imitó una muestra aleatoria simple, una estrategia directa que ayuda a evitar el sesgo muestral.
+
+--
+
+**Dispersión.** La desviación estándar de la distribución es `\(s_{\hat{p}}=0.010\)`. Al hablar de una distribución muestral, típicamente usamos el término .hi[error estándar] en lugar de desviación estándar, con la notación `\(SE_{\hat{p}}\)`.
+
+--
+
+**Forma.** La distribución es simétrica y con forma de campana, se asemeja a una distribución normal.
+
+---
+
+### Las distribuciones muestrales nunca se observan, pero las tenemos en mente
+
+En aplicaciones del mundo real, nunca observamos realmente la distribución muestral, pero es útil pensar siempre en una estimación puntual como proveniente de tal distribución hipotética.
+
+--
+
+**Ejemplo:.** Si usáramos un tamaño de muestra mucho menor, `\(n=50\)`, ¿esperarías que el error estándar de `\(\hat{p}\)` sea mayor o menor que cuando usamos `\(n=1000\)`?
+
+--
+
+**Solución:** Intuitivamente, más datos son mejores que menos datos, y generalmente eso es correcto. El error típico cuando `\(p=0.88\)` y `\(n=50\)` sería .hi[mayor] que el error esperado con `\(n=1000\)`.
+
+--
+
+Esto resalta una propiedad importante: una .hi[muestra más grande] tiende a proveer una estimación puntual más precisa que una más pequeña.
+
+---
+
+## Teorema del Límite Central
+
+La distribución de las proporciones muestrales luce muchísimo como una distribución normal. Esto no es una anomalía; es el resultado de un principio general llamado el .hi[Teorema del Límite Central (TCL)].
+
+### TCL y la condición de éxito-fracaso
+
+Cuando las observaciones son independientes y el tamaño de muestra es suficientemente grande, la proporción muestral `\(\hat{p}\)` tenderá a seguir una distribución normal con:
+
+`$$\mu_{\hat{p}}=p \qquad SE_{\hat{p}}=\sqrt{\dfrac{p(1-p)}{n}}$$`
+
+---
+
+Para que se cumpla el TCL, el tamaño de muestra típicamente se considera suficientemente grande cuando `\(np\geq10\)` y `\(n(1-p)\geq10\)`, lo cual se llama la .hi[condición de éxito-fracaso].
+
+--
+
+Es incriblemente importante y provee un fundamento para gran parte de la estadística. Al aplicarlo, ten en mente las dos condiciones técnicas: las observaciones deben ser independientes, y el tamaño de muestra debe ser suficientemente grande.
+
+--
+
+**Ejemplo:** Confirma que el TCL aplica y la distribución muestral es aproximadamente normal cuando `\(p=0.88\)` y `\(n=1000\)`.
+
+---
+
+**Solución:**
+
+**Independencia.** Hay `\(n=1000\)` observaciones para cada `\(\hat{p}\)`, cada una un sorteo independiente. La forma más común de que las observaciones sean independientes es si provienen de una muestra aleatoria simple.
+
+--
+
+**Condición de éxito-fracaso.**
+
+$$ np=1000\times0.88=880\geq10 \qquad n(1-p)=1000\times0.12=120\geq10 $$
+
+
+``` r
+1000*0.88
+```
+
+```
+#&gt; [1] 880
+```
+
+``` r
+1000*0.12
+```
+
+```
+#&gt; [1] 120
+```
+
+Ambas condiciones se satisfacen, así que el TCL aplica.
+
+---
+
+### Cómo verificar que las observaciones muestrales son independientes
+
+- Los sujetos en un experimento se consideran independientes si se sometieron a asignación aleatoria a los grupos de tratamiento.
+- Si las observaciones son de una muestra aleatoria simple, entonces son independientes.
+- Si una muestra proviene de un proceso aparentemente aleatorio, verificar la independencia es más difícil—usa tu mejor juicio.
+
+--
+
+Una condición adicional que a veces se agrega es que la muestra no sea mayor al 10% de la población. Cuando la muestra excede el 10%, los métodos que discutimos tienden a sobreestimar ligeramente el error muestral. Esto es muy raramente un problema.
+
+---
+
+**Ejemplo:** Calcula la media y el error estándar teóricos de `\(\hat{p}\)` cuando `\(p=0.88\)` y `\(n=1000\)`.
+
+--
+
+**Solución:**       `\(\mu_{\hat{p}}=0.88\)`.
+
+$$ SE_{\hat{p}} = \sqrt{\dfrac{p(1-p)}{n}} = \sqrt{\dfrac{0.88(1-0.88)}{1000}} = 0.010 $$
+
+
+``` r
+sqrt(0.88*0.12/1000)
+```
+
+```
+#&gt; [1] 0.01027619
+```
+
+---
+
+**Ejemplo:** Estima con qué frecuencia `\(\hat{p}\)` debería estar dentro de 0.02 (2%) del valor poblacional, `\(p=0.88\)`. Sabemos que la distribución es aproximadamente `\(N(\mu_{\hat{p}}=0.88, SE_{\hat{p}}=0.010)\)`.
+
+--
+
+**Solución:** Queremos entender la fracción de `\(\hat{p}\)`'s entre 0.86 y 0.90:
+
+`$$Z_{0.86}=\dfrac{0.86-0.88}{0.010}=-2 \qquad Z_{0.90}=\dfrac{0.90-0.88}{0.010}=2$$`
+
+
+``` r
+pnorm(2) - pnorm(-2)
+```
+
+```
+#&gt; [1] 0.9544997
+```
+
+Las áreas de cola son cada una 0.0228; el área total de las colas es `\(2\times0.0228=0.0456\)`, dejando el área sombreada de .hi[0.9544]. Es decir, aproximadamente .hi[95.44%] de la distribución muestral está dentro de `\(\pm0.02\)` de `\(p=0.88\)`.
+
+
+---
+
+## Aplicando el TLC a un contexto del mundo real
+
+En realidad no conocemos la proporción poblacional a menos que hagamos una encuesta costosa a toda la población. Nuestro valor anterior de `\(p=0.88\)` se basó en una encuesta de Pew Research a 1000 adultos estadounidenses que encontró `\(\hat{p}=0.887\)`.
+
+--
+
+**Independencia.** La encuesta es una muestra aleatoria simple, así que las observaciones son independientes.
+
+--
+
+**Condición de éxito-fracaso.** Necesitamos `\(p\)` para verificar `\(np\)` y `\(n(1-p)\)`, pero no lo conocemos—¡por eso hacen la encuesta! En estos casos, usamos `\(\hat{p}\)` como nuestra siguiente mejor opción:
+
+$$ n\hat{p}=1000\times0.887=887 \qquad n(1-\hat{p})=1000\times0.113=113 $$
+
+---
+
+
+``` r
+1000*0.887
+```
+
+```
+#&gt; [1] 887
+```
+
+``` r
+1000*(1-0.887)
+```
+
+```
+#&gt; [1] 113
+```
+
+Ambos valores están muy por encima del mínimo de 10.Esta aproximación por sustitución de usar `\(\hat{p}\)` en lugar de `\(p\)` también es útil al calcular el error estándar de la proporción muestral:
+
+$$ SE_{\hat{p}} = \sqrt{\dfrac{p(1-p)}{n}} \approx \sqrt{\dfrac{\hat{p}(1-\hat{p})}{n}} = \sqrt{\dfrac{0.887(1-0.887)}{1000}} = 0.010 $$
+
+--
+
+
+``` r
+sqrt(0.887*(1-0.887)/1000)
+```
+
+```
+#&gt; [1] 0.01001154
+```
+
+
+---
+
+## Más detalles sobre el TCL
+
+
+¿Qué pasa cuando `\(np&lt;10\)` o `\(n(1-p)&lt;10\)`? Simulamos con `\(p=0.25\)`. Aquí una muestra de tamaño 10:
+
+$$ \text{no, no, sí, sí, no, no, no, no, no, no} $$
+
+En esta muestra, observamos una proporción muestral de "dos" de `\(\hat{p}=2/10=0.2\)`.
+
+---
+
+&lt;img src="04-inferencia_files/figure-html/small sample sim-1.png" style="display: block; margin: auto;" /&gt;
+
+**Izquierda:** simulaciones de `\(\hat{p}\)` con `\(n=10\)`, `\(p=0.25\)`.
+**Derecha:** una normal con la misma media y variabilidad.
+
+---
+
+| | ¿Unimodal? | ¿Suave? | ¿Simétrica? |
+|---|---|---|---|
+| Normal: `\(N(0.25, 0.14)\)` | Sí | Sí | Sí |
+| `\(n=10\)`, `\(p=0.25\)` | Sí | No | No |
+
+--
+
+La condición de éxito-fracaso **no** se satisfizo con `\(n=10\)` y `\(p=0.25\)`:
+
+$$ np=10\times0.25=2.5 \qquad n(1-p)=10\times0.75=7.5 $$
+
+---
+
+
+``` r
+10*0.25
+```
+
+```
+#&gt; [1] 2.5
+```
+
+``` r
+10*0.75
+```
+
+```
+#&gt; [1] 7.5
+```
+
+Esta única distribución muestral no demuestra que la condición de éxito-fracaso sea perfecta, pero identificó correctamente que un modelo normal podría no ser apropiado.
+
+---
+
+Completando simulaciones adicionales, se puede apreciar algunas tendencias:
+
+1. Cuando `\(np\)` o `\(n(1-p)\)` es pequeño, la distribución es más discreta (no continua).
+2. Cuando `\(np\)` o `\(n(1-p)\)` es menor a 10, el sesgo en la distribución es más notable.
+3. Entre más grandes sean tanto `\(np\)` como `\(n(1-p)\)`, más normal es la distribución.
+4. Cuando `\(np\)` y `\(n(1-p)\)` son ambos muy grandes, la discretud de la distribución apenas es evidente, y se ve mucho más como una normal.
+
+---
+
+&lt;img src="04-inferencia_files/figure-html/grid sims-1.png" style="display: block; margin: auto;" /&gt;
+
+**Gráfico** Distribuciones muestrales para varios escenarios de `\(p\)` y `\(n\)`.
+
+---
+
+No hemos considerado cómo cambian la media y el error estándar de las distribuciones. Se tiene que prestar atención a tres cosas:
+
+--
+
+(1) Los .hi[centros] de la distribución siempre están en la proporción poblacional `\(p\)` usada para generar la simulación. La distribución muestral de `\(\hat{p}\)` siempre está centrada en el parámetro poblacional `\(p\)`, lo que significa que `\(\hat{p}\)` es .hi[insesgado] cuando los datos son independientes y extraídos de tal población.
+
+--
+
+(2) Para una proporción poblacional particular `\(p\)`, la .hi[variabilidad] en la distribución muestral disminuye a medida que `\(n\)` se hace más grande.
+
+---
+
+(3) Para un tamaño de muestra particular, la variabilidad será .hi[máxima cuando `\(p=0.5\)`]. Esto refleja el papel de `\(p\)` en la fórmula del error estándar: `\(SE=\sqrt{p(1-p)/n}\)` es más grande cuando `\(p=0.5\)`.
+
+&lt;img src="04-inferencia_files/figure-html/se by p-1.png" style="display: block; margin: auto;" /&gt;
+
+--
+
+En ningún punto la distribución de `\(\hat{p}\)` lucirá perfectamente normal, ya que `\(\hat{p}\)` siempre tomará valores discretos (x/n).
+
+---
+
+## Extendiendo el marco a otros estadísticos
+
+
+La estrategia de usar un estadístico muestral para estimar un parámetro es bastante común, se puede aplicarla a otros estadísticos además de una proporción.
+
+--
+
+Por ejemplo, si queremos estimar el salario promedio de los graduados de una universidad particular, podríamos encuestar a una muestra aleatoria de graduados recientes; en ese ejemplo, usaríamos una media muestral `\(\bar{x}\)` para estimar la media poblacional `\(\mu\)` de todos los graduados.
+
+--
+
+Como otro ejemplo, si queremos estimar la diferencia en precios de productos entre dos sitios web, podríamos tomar una muestra aleatoria de productos disponibles en ambos, revisar los precios, y calcular la diferencia promedio.
+
+
+---
+layout: false
+class: inverse, middle
+
+# Intervalos de Confianza (IC) para una Proporción
+
+---
+
+# IC para una proporción
+
+
+La proporción muestral `\(\hat{p}\)` provee un único valor plausible para la proporción poblacional `\(p\)`. Sin embargo, la proporción muestral no es perfecta y tendrá algún error estándar asociado.
+
+--
+
+Al declarar una estimación para la proporción poblacional, es mejor práctica proveer un .hi[rango plausible de valores] en vez de solo la estimación puntual.
+
+--
+
+## Capturando el parámetro poblacional
+
+
+Usar solo una estimación puntual es como pescar en un lago turbio con un arpón: podemos lanzarlo donde vimos un pez, pero probablemente fallaremos.
+
+---
+# IC para una proporción
+
+Por otro lado, si lanzamos una red en esa área, tenemos una buena oportunidad de atrapar el pez. Un .hi[intervalo de confianza] es como pescar con una red, y representa un rango de valores plausibles donde es probable que encontremos el parámetro poblacional.
+
+--
+
+**Ejemplo:** Si queremos estar muy seguros de capturar la proporción poblacional en un intervalo, ¿deberíamos usar un intervalo más ancho o más pequeño?
+
+--
+
+**Solución:** Si queremos estar más seguros de atrapar el pez, usaríamos una red más ancha. De igual forma, usamos un intervalo de confianza .hi[más ancho] si queremos estar más seguros de capturar el parámetro.
+
+---
+
+# Construyendo un IC del 95%
+
+
+Nuestra proporción muestral `\(\hat{p}\)` es el valor más plausible de la proporción poblacional, así que tiene sentido construir un intervalo de confianza alrededor de esta estimación puntual. El error estándar provee una guía de qué tan grande debería ser el intervalo.
+
+--
+
+En una distribución normal, 95% de los datos está dentro de 1.96 desviaciones estándar de la media. Usando este principio, podemos construir un intervalo de confianza que se extienda 1.96 errores estándar desde la proporción muestral:
+
+$$ \text{estimación puntual} \pm 1.96 \times SE $$
+$$ \hat{p} \pm 1.96\times\sqrt{\dfrac{p(1-p)}{n}} $$
+
+---
+# Construyendo un IC del 95%
+
+¿Qué significa "95% de confianza"? Si tomáramos muchas muestras y construyéramos un intervalo de confianza del 95% de cada una, aproximadamente 95% de esos intervalos contendrían el parámetro `\(p\)`.
+
+&lt;img src="04-inferencia_files/figure-html/ci sim-1.png" style="display: block; margin: auto;" /&gt;
+
+**Gráfico:** 25 estimaciones puntuales e intervalos de confianza, relativos a `\(p=0.88\)`.
+
+---
+# Construyendo un IC del 95%
+**Ejemplo:** En el Gráfico previo, un intervalo no contiene `\(p=0.88\)`. ¿Implica esto que la proporción poblacional usada en la simulación no podría haber sido `\(p=0.88\)`?
+
+--
+
+**Solución:** Así como algunas observaciones naturalmente ocurren a más de 1.96 desviaciones estándar de la media, algunas estimaciones puntuales estarán a más de 1.96 errores estándar del parámetro de interés. Un intervalo de confianza solo provee un rango plausible de valores—no dice que otros valores sean imposibles.
+
+---
+# Construyendo un IC del 95%
+
+
+Cuando la distribución de una estimación puntual califica para el Teorema del Límite Central y por lo tanto sigue de cerca una distribución normal, se puede construir un intervalo de confianza del 95% como:
+
+$$ \text{estimación puntual} \pm 1.96\times SE $$
+--
+
+**Ejemplo:** En la encuesta de Pew Research, 88.7% de una muestra aleatoria de 1000 adultos estadounidenses apoyó expandir el rol de la energía solar. Calcula e interpreta un intervalo de confianza del 95% para la proporción poblacional.
+
+---
+# Construyendo un IC del 95%
+
+**Solución:** Ya confirmamos que `\(\hat{p}\)` sigue una distribución normal con `\(SE_{\hat{p}}=0.010\)`.
+
+$$ \hat{p}\pm1.96\times SE_{\hat{p}} \to 0.887\pm1.96\times0.010 \to (0.8674, 0.9066) $$
+--
+
+
+``` r
+0.887 - 1.96*0.010
+```
+
+```
+#&gt; [1] 0.8674
+```
+
+``` r
+0.887 + 1.96*0.010
+```
+
+```
+#&gt; [1] 0.9066
+```
+
+--
+
+Estamos .hi[95% seguros] de que la proporción real de adultos estadounidenses que apoya expandir la energía solar está entre .hi[86.7% y 90.7%].
+
+---
+
+# Cambiando el nivel de confianza
+
+
+Se quiere considerar intervalos de confianza con un nivel de confianza mayor a 95%, como 99%. Recordando la analogía del pez: si queremos estar más seguros de atraparlo, deberíamos usar una red más ancha.
+
+--
+
+La estructura del intervalo de confianza del 95% provee la guía para construir intervalos con otros niveles de confianza:
+
+$$ \text{estimación puntual} \pm 1.96\times SE $$
+
+Hay tres componentes: la estimación puntual, "1.96", y el error estándar. El "1.96" corresponde a un nivel de confianza del 95%.
+
+---
+# Cambiando el nivel de confianza
+**Ejemplo:** Si `\(X\)` es una variable aleatoria normal, ¿cuál es la probabilidad de que `\(X\)` esté dentro de 2.58 desviaciones estándar de la media?
+
+
+``` r
+pnorm(2.58) - pnorm(-2.58)
+```
+
+```
+#&gt; [1] 0.99012
+```
+
+**Solución:** `\(0.9951-0.0049\approx0.99\)`. Hay una probabilidad de 0.99 de que `\(X\)` esté dentro de 2.58 desviaciones estándar de `\(\mu\)`.
+
+---
+# Cambiando el nivel de confianza
+Para crear un intervalo de confianza del 99%, cambiamos el 1.96 de la fórmula por 2.58:
+
+$$ \text{estimación puntual}\pm2.58\times SE $$
+
+&lt;img src="04-inferencia_files/figure-html/z levels-1.png" style="display: block; margin: auto;" /&gt;
+
+**Gráfico:** El área entre `\(-z^{\star}\)` y `\(z^{\star}\)` aumenta a medida que `\(z^{\star}\)` crece. Para 99% de confianza, `\(z^{\star}=2.58\)`; para 95%, `\(z^{\star}=1.96\)`.
+
+---
+
+# IC usando cualquier nivel de confianza
+
+Si una estimación puntual sigue de cerca un modelo normal con error estándar `\(SE\)`, un intervalo de confianza para el parámetro poblacional es
+
+$$ \text{estimación puntual}\pm z^{\star}\times SE $$
+
+donde `\(z^{\star}\)` corresponde al nivel de confianza seleccionado.
+
+--
+
+### Margen de error
+
+En un intervalo de confianza, `\(z^{\star}\times SE\)` se llama el .hi[margen de error].
+
+---
+# IC usando cualquier nivel de confianza
+
+**Ejemplo:** Usa los datos del ejemplo anterior para crear un intervalo de confianza del 90%.
+
+--
+
+**Solución:** `\(z^{\star}=1.65\)` (5% en cada cola).
+
+$$ \hat{p}\pm1.65\times SE_{\hat{p}} \to 0.887\pm1.65\times0.0100 \to (0.8705, 0.9034) $$
+
+
+``` r
+0.887 - qnorm(0.95)*0.010
+```
+
+```
+#&gt; [1] 0.8705515
+```
+
+``` r
+0.887 + qnorm(0.95)*0.010
+```
+
+```
+#&gt; [1] 0.9034485
+```
+
+Estamos 90% seguros de que entre 87.1% y 90.3% de los adultos estadounidenses apoyó la expansión de la energía solar en 2018.
+
+---
+
+# IC para una proporción única
+
+Una vez que determinas que un intervalo de confianza de una proporción sería útil, hay cuatro pasos:
+
+--
+
+**Preparar:** Identifica `\(\hat{p}\)` y `\(n\)`, y determina el nivel de confianza deseado.
+
+--
+
+**Verificar:** Verifica las condiciones para asegurar que `\(\hat{p}\)` sea casi normal. Para intervalos de confianza de una proporción, usa `\(\hat{p}\)` en lugar de `\(p\)` para verificar la condición de éxito-fracaso.
+
+--
+
+**Calcular:** Si las condiciones se cumplen, calcula `\(SE\)` usando `\(\hat{p}\)`, encuentra `\(z^{\star}\)`, y construye el intervalo.
+
+--
+
+**Concluir:** Interpreta el intervalo de confianza en el contexto del problema.
+
+---
+layout: true
+# Más casos de estudio
+---
+
+En Nueva York, el 23 de octubre de 2014, un doctor que recientemente había tratado pacientes de Ébola en Guinea fue al hospital con fiebre leve y posteriormente fue diagnosticado con Ébola. Poco después, una encuesta de NBC 4 New York/The Wall Street Journal/Marist Poll encontró que 82% de los neoyorquinos favorecía una "cuarentena obligatoria de 21 días para cualquiera que haya tenido contacto con un paciente de Ébola" (encuesta a 1,042 adultos entre el 26 y 28 de octubre de 2014).
+
+--
+
+**Se pide:** ¿Cuál es la estimación puntual en este caso, y es razonable usar una distribución normal para modelarla?
+
+--
+
+**Verificar:** La estimación puntual, con `\(n=1042\)`, es `\(\hat{p}=0.82\)`.
+
+$$ 1042\times\hat{p}\approx854 \qquad 1042\times(1-\hat{p})\approx188 $$
+
+---
+
+
+``` r
+1042*0.82
+```
+
+```
+#&gt; [1] 854.44
+```
+
+``` r
+1042*(1-0.82)
+```
+
+```
+#&gt; [1] 187.56
+```
+
+Ambas condiciones se satisfacen, así que la distribución muestral de `\(\hat{p}\)` puede modelarse razonablemente con una normal.
+
+---
+
+**Calcular:** Estima el error estándar de `\(\hat{p}=0.82\)` de la encuesta de Ébola.
+
+$$ SE_{\hat{p}}=\sqrt{\dfrac{p(1-p)}{n}}\approx\sqrt{\dfrac{0.82(1-0.82)}{1042}}=0.012 $$
+
+
+``` r
+sqrt(0.82*0.18/1042)
+```
+
+```
+#&gt; [1] 0.01190171
+```
+
+--
+
+**Calcular:** Construye un intervalo de confianza del 95% para `\(p\)`.
+
+$$ \text{estimación}\pm z^{\star}\times SE \to 0.82\pm1.96\times0.012 \to (0.796, 0.844) $$
+
+---
+
+
+``` r
+0.82 - 1.96*0.012
+```
+
+```
+#&gt; [1] 0.79648
+```
+
+``` r
+0.82 + 1.96*0.012
+```
+
+```
+#&gt; [1] 0.84352
+```
+
+Estamos 95% seguros de que la proporción de adultos neoyorquinos que apoyaba una cuarentena en octubre de 2014 estaba entre 0.796 y 0.844.
+
+---
+
+**Curiosidades:** Sobre el intervalo del ejemplo previamente desarrolalado:
+
+a. ¿Qué significa "95% de confianza" en este contexto?
+
+b. ¿Sigue siendo válido este intervalo para las opiniones actuales de los neoyorquinos?
+
+--
+
+**Solución:** 
+
+(a) Si tomáramos muchas muestras y calculáramos un intervalo de confianza del 95% para cada una, aproximadamente 95% de esos intervalos contendrían la proporción real. 
+
+(b) No necesariamente—la encuesta se tomó en un momento de gran preocupación de seguridad pública; las opiniones podrían haber cambiado.
+
+
+
+---
+layout: true
+
+# Interpretando intervalos de confianza
+---
+
+En cada uno de los ejemplos, describimos los intervalos de confianza poniéndolos en el contexto de los datos, usando lenguaje algo formal:
+
+- **Solar:** Estamos 90% seguros de que entre 87.1% y 90.4% de los adultos estadounidenses apoya la expansión de la energía solar en 2018.
+- **Ébola:** Estamos 95% seguros de que la proporción de adultos neoyorquinos que apoyaba la cuarentena estaba entre 0.796 y 0.844.
+- **Turbinas eólicas:** Estamos 99% seguros de que la proporción de adultos estadounidenses que apoya expandir las turbinas eólicas está entre 81.9% y 87.7% en 2018.
+
+--
+
+Primero, nota que las afirmaciones siempre son sobre el .hi[parámetro poblacional].
+
+---
+
+También evitamos otro error común: describir el intervalo de confianza como si capturara el parámetro poblacional con cierta probabilidad. Hacer una interpretación de probabilidad es un error común—el nivel de confianza solo cuantifica qué tan plausible es que el parámetro esté en el intervalo dado.
+
+--
+
+Otra consideración importante es que los intervalos de confianza son .hi[solo sobre el parámetro poblacional]. Un intervalo de confianza no dice nada sobre observaciones individuales o estimaciones puntuales.
+
+--
+
+Finalmente, ten en cuenta que los métodos discutidos solo aplican al .hi[error muestral], no al sesgo. Si un conjunto de datos se recolectó de forma que tienda a sub- o sobreestimar sistemáticamente el parámetro poblacional, las técnicas discutidas no abordarán ese problema. Dependemos de procedimientos cuidadosos de recolección de datos para protegernos contra el sesgo.
+
+---
+
+**Curiosidades:** Considera el intervalo de confianza del 90% para la encuesta de energía solar: 87.1% a 90.4%. Si repitiéramos la encuesta, ¿podemos decir que estamos 90% seguros de que la nueva proporción estará entre 87.1% y 90.4%?
+
+--
+
+**Solución:** .hi[No]. Un intervalo de confianza solo provee un rango de valores plausibles para un parámetro, no para futuras estimaciones puntuales.
+
+---
+layout: false
+class: inverse, middle
+
+# Pruebas de Hipótesis para una Proporción
+
+---
+layout: true
+# Hypothesis test para una proporción
+---
+
+La siguiente pregunta proviene de un libro escrito por Hans Rosling, Anna Rosling Rönnlund, y Ola Rosling llamado *Factfulness*:
+
+&gt; ¿Cuántos de los niños de 1 año del mundo hoy han sido vacunados contra alguna enfermedad?
+&gt; a. 20% &amp;nbsp;&amp;nbsp; b. 50% &amp;nbsp;&amp;nbsp; c. 80%
+
+--
+
+.footnote[La respuesta correcta es (c): 80%.]
+
+En esta sección, exploraremos cómo se desempeñan las personas con un título universitario de 4 años en esta y otras preguntas de salud mundial, mientras aprendemos sobre las .hi[pruebas de hipótesis (hypothesis test)], un marco usado para evaluar rigurosamente ideas y afirmaciones en competencia.
+
+---
+layout: true
+
+# El marco de las hypothesis test
+---
+
+Nos interesa entender cuánto sabe la gente sobre salud y desarrollo mundial. Si tomamos una pregunta de opción múltiple sobre salud mundial, podríamos querer entender si:
+
+`\(H_0\)`: La gente nunca aprende estos temas particulares y sus respuestas son simplemente equivalentes a adivinar al azar.
+
+`\(H_A\)`: La gente tiene conocimiento que le ayuda a hacerlo mejor que adivinar al azar, o quizás tiene conocimiento falso que la lleva a hacerlo peor que adivinar al azar.
+
+--
+
+Estas ideas en competencia se llaman .hi[hipótesis]. Llamamos a `\(H_0\)` la .hi[hipótesis nula] y a `\(H_A\)` la .hi[hipótesis alternativa]. El subíndice 0 se pronuncia "cero" o "nula" (p. ej., `\(H_0\)` se pronuncia "H-nula").
+
+---
+
+## Hipótesis nula y alternativa
+
+La hipótesis nula `\((H_0)\)` a menudo representa una perspectiva escéptica o una afirmación a probar. La hipótesis alternativa `\((H_A)\)` representa una afirmación alternativa bajo consideración, a menudo representada por un rango de valores posibles del parámetro.
+
+--
+
+Nuestro trabajo como científicos de datos es jugar el rol de escépticos: antes de aceptar la hipótesis alternativa, necesitamos ver evidencia fuerte que la respalde.
+
+--
+
+La hipótesis nula a menudo representa una posición escéptica o una perspectiva de "sin diferencia".
+
+--
+
+La hipótesis alternativa generalmente representa una perspectiva nueva o más fuerte.
+
+---
+
+El marco de las pruebas de hipótesis es una herramienta muy general, y a menudo lo usamos sin pensarlo dos veces. Si una persona hace una afirmación algo increíble, somos inicialmente escépticos. Sin embargo, si hay suficiente evidencia que apoye la afirmación, dejamos de lado nuestro escepticismo y .hi[rechazamos la hipótesis nula] a favor de la alternativa.
+
+--
+
+Los rasgos distintivos de las pruebas de hipótesis también se encuentran en el sistema judicial de EE.UU.
+
+--
+
+**Ejemplo:** Una corte de EE.UU. considera dos posibles afirmaciones sobre un acusado: es inocente o culpable. ¿Cuál sería la hipótesis nula y cuál la alternativa?
+
+--
+
+**Solución:** El jurado examina si la evidencia es tan convincente que no hay duda razonable de culpabilidad; en tal caso, el jurado rechaza la inocencia (hipótesis nula) y concluye que el acusado es culpable (hipótesis alternativa).
+
+---
+
+Aunque los jurados no queden convencidos de culpabilidad más allá de duda razonable, esto no significa que crean que el acusado es inocente. Esto también aplica a las pruebas de hipótesis: incluso si no rechazamos la hipótesis nula, típicamente no aceptamos que la nula sea verdadera.
+
+--
+
+Para la pregunta de Rosling sobre vacunación infantil, la hipótesis nula representa la noción de que las personas—adultos con educación universitaria—son tan precisas como adivinar al azar. Es decir, la proporción `\(p\)` de encuestados que elige la respuesta correcta (80%) es aproximadamente 33.3% (1-en-3).
+
+$$ H_0: p=0.333 \qquad H_A: p\neq0.333 $$
+
+--
+
+El valor con el que comparamos el parámetro se llama el .hi[valor nulo]. Es común etiquetar el valor nulo con el mismo símbolo del parámetro pero con subíndice '0': `\(p_0=0.333\)` (se pronuncia "p-nulo igual a 0.333").
+
+---
+
+**Curiosidades:** Puede parecer imposible que la proporción de personas que da la respuesta correcta sea exactamente 33.3%. Si no creemos en la hipótesis nula, ¿deberíamos simplemente rechazarla?
+
+--
+
+**Solución:** .hi[No]. Aunque no creamos que la proporción es exactamente 33.3%, el marco de pruebas de hipótesis requiere evidencia fuerte antes de rechazar la nula y concluir algo más interesante. Sin datos que apunten fuertemente en una dirección u otra, es tanto poco interesante como inútil rechazar `\(H_0\)`.
+
+--
+
+**Ejemplo:** Otro ejemplo del mundo real: evaluar si un nuevo medicamento es mejor o peor que uno existente.
+
+--
+
+**Solución:** `\(H_0\)`: los medicamentos son igualmente efectivos. 
+
+`\(H_A\)`: el nuevo medicamento se desempeña diferente que el original (mejor o peor).
+
+---
+layout: true
+# Probando hipótesis usando IC
+---
+
+Usaremos el conjunto de datos `rosling_responses` para evaluar si la proporción de adultos con educación universitaria que responde correctamente la pregunta de vacunación infantil difiere de 33.3%. Este conjunto resume las respuestas de 50 adultos, de los cuales 24% respondió correctamente.
+
+--
+
+¿Los datos proveen evidencia fuerte de que la proporción de todos los adultos universitarios que responderían correctamente difiere de 33.3%?
+
+--
+
+**Se pide:** Verificar si es razonable construir un intervalo de confianza para `\(p\)`, y si es así, constrúyelo al 95%.
+
+--
+
+**Solución:** Las condiciones se cumplen: los datos vienen de una muestra aleatoria simple (independencia), y `\(n\hat{p}=12\)` y `\(n(1-\hat{p})=38\)` son ambos al menos 10 (éxito-fracaso).
+
+$$ \hat{p}\pm z^{\star}\times SE_{\hat{p}} \to 0.24\pm1.96\times0.060 \to (0.122, 0.358) $$
+
+---
+
+
+``` r
+se_ros &lt;- sqrt(0.24*0.76/50); se_ros
+```
+
+```
+#&gt; [1] 0.06039868
+```
+
+``` r
+0.24 - 1.96*se_ros
+```
+
+```
+#&gt; [1] 0.1216186
+```
+
+``` r
+0.24 + 1.96*se_ros
+```
+
+```
+#&gt; [1] 0.3583814
+```
+
+Estamos 95% seguros de que la proporción de todos los adultos universitarios que responde correctamente está entre 12.2% y 35.8%.
+
+---
+
+Como el valor nulo `\(p_0=0.333\)` cae dentro del rango de valores plausibles del intervalo de confianza, .hi[no podemos decir que el valor nulo es implausible]. Es decir, los datos no proveen evidencia suficiente para rechazar la noción de que el desempeño de los adultos universitarios fue diferente a adivinar al azar, y no rechazamos `\(H_0\)`.
+
+--
+
+**Curiosidades:** Explica por qué no podemos concluir que los adultos universitarios simplemente adivinaron.
+
+--
+
+**Solución:** Aunque no rechazamos `\(H_0\)`, esto no significa necesariamente que la hipótesis nula sea verdadera. Quizás había una diferencia real, pero no fuimos capaces de detectarla con la muestra relativamente pequeña de 50.
+
+---
+
+### Los dobles negativos a veces se usan en estadística
+
+Podríamos decir que la hipótesis nula "no es implausible" o que "no rechazamos" la hipótesis nula. Los dobles negativos comunican que, aunque no rechazamos una posición, tampoco decimos que sea correcta.
+
+--
+
+**Ejemplo:** "Hay 2 mil millones de niños en el mundo hoy de 0 a 15 años. ¿Cuántos niños habrá en 2100 según la ONU? a. 4 mil millones. b. 3 mil millones. c. 2 mil millones."
+
+--
+
+**Solución:** `\(H_0: p=0.333\)` (adivinar al azar). `\(H_A: p\neq0.333\)`. La respuesta correcta es .hi[2 mil millones]—aunque la población mundial crecerá, la edad promedio también aumentará.
+
+---
+
+**Ejemplo:** Con una muestra más grande de 228 adultos universitarios, 34 (14.9%) seleccionó la respuesta correcta. ¿Podemos modelar `\(\hat{p}\)` con una normal?
+
+--
+
+**Solución:** Independencia: sí (muestra aleatoria simple). Éxito-fracaso: `\(n\hat{p}=34\)`, `\(n(1-\hat{p})=194\)`, ambos mayores a 10. Sí, es razonable.
+
+--
+
+**Ejemplo:** Calcula un intervalo de confianza del 95% para la fracción que respondió correctamente la pregunta de niños-en-2100, y evalúa las hipótesis.
+
+--
+
+**Solución:**
+
+$$ SE_{\hat{p}}=\sqrt{\dfrac{0.149(1-0.149)}{228}}=0.024 $$
+
+---
+
+
+``` r
+se_2100 &lt;- sqrt(0.149*0.851/228); se_2100
+```
+
+```
+#&gt; [1] 0.02358254
+```
+
+``` r
+0.149 - 1.96*se_2100
+```
+
+```
+#&gt; [1] 0.1027782
+```
+
+``` r
+0.149 + 1.96*se_2100
+```
+
+```
+#&gt; [1] 0.1952218
+```
+
+$$ \hat{p}\pm z^{\star}\times SE \to 0.149\pm1.96\times0.024 \to (0.103, 0.195) $$
+
+--
+
+Como el valor nulo, `\(p_0=0.333\)`, .hi[no está] en el IC, una proporción poblacional de 0.333 es implausible y .hi[rechazamos] `\(H_0\)`. Los datos proveen evidencia estadísticamente significativa de que la proporción real es diferente a adivinar al azar—y, como todo el intervalo está por debajo de 0.333.
+
+---
+layout: true
+
+# Errores de decisión
+---
+
+Las pruebas de hipótesis no son infalibles: podemos tomar una decisión incorrecta en una prueba de hipótesis estadística basada en los datos. Al igual que en el sistema judicial, a veces se condena a inocentes y los culpables a veces quedan libres.
+
+--
+
+Hay dos hipótesis en competencia: la nula y la alternativa. En una prueba de hipótesis, hacemos una afirmación sobre cuál podría ser verdadera, pero podríamos elegir incorrectamente. Hay cuatro escenarios posibles:
+
+---
+
+
+``` r
+tabla_errores &lt;- tibble(
+  " " = c("H0 verdadera", "HA verdadera"),
+  "no rechazar H0" = c("correcto", "Error Tipo 2"),
+  "rechazar H0 (a favor de HA)" = c("Error Tipo 1", "correcto")
+)
+tabla_errores
+```
+
+```
+#&gt; # A tibble: 2 × 3
+#&gt;   ` `          `no rechazar H0` `rechazar H0 (a favor de HA)`
+#&gt;   &lt;chr&gt;        &lt;chr&gt;            &lt;chr&gt;                        
+#&gt; 1 H0 verdadera correcto         Error Tipo 1                 
+#&gt; 2 HA verdadera Error Tipo 2     correcto
+```
+
+Se tiene cuatro escenarios diferentes para las pruebas de hipótesis.
+
+---
+
+Un .hi[Error Tipo 1] es rechazar la hipótesis nula cuando `\(H_0\)` es en realidad verdadera. Un .hi[Error Tipo 2] es no rechazar la hipótesis nula cuando la alternativa es en realidad verdadera.
+
+--
+
+**Ejemplo:** En una corte de EE.UU., el acusado es inocente `\((H_0)\)` o culpable `\((H_A)\)`. ¿Qué representa un Error Tipo 1? ¿Y un Error Tipo 2?
+
+--
+
+**Solución:** 
+
+Un Error Tipo 1 significa que el acusado es inocente `\((H_0\)` verdadera) pero fue condenado injustamente. 
+
+Un Error Tipo 2 significa que la corte no condenó a alguien que en realidad era culpable `\((H_A\)` verdadera).
+
+
+---
+layout: true
+
+# Pruebas formales usando valores-*p*
+---
+
+Un intervalo de confianza es muy útil para determinar si rechazar o no la hipótesis nula. Sin embargo, el enfoque del intervalo de confianza no siempre es sostenible—en varias secciones futuras encontraremos situaciones donde no se puede construir un intervalo de confianza.
+
+--
+
+Introducimos un estadístico llamado el .hi[valor-*p*] para expandir nuestras herramientas estadísticas.
+
+### Valor-*p*
+
+El valor-*p* es la probabilidad de observar datos al menos tan favorables a la hipótesis alternativa como nuestro conjunto de datos actual, .hi[si la hipótesis nula fuera verdadera]. Típicamente usamos un estadístico resumen de los datos—en esta sección, la proporción muestral—para calcular el valor-*p* y evaluar las hipótesis.
+
+---
+
+**Ejemplo:** Pew Research preguntó a una muestra aleatoria de 1000 adultos estadounidenses si apoyaban el uso incrementado de carbón para producir energía. Establece hipótesis para evaluar si una mayoría apoya u opone el uso incrementado de carbón.
+
+--
+
+**Solución:**
+
+$$ H_0: p=0.5 \qquad H_A: p\neq0.5 $$
+
+El valor nulo es `\(p_0=0.5\)`.
+
+--
+
+Al evaluar hipótesis para proporciones usando el método del valor-*p*, modificaremos ligeramente cómo verificamos la condición de éxito-fracaso y calculamos el error estándar. Estos cambios no son drásticos, pero presta atención a cómo usamos el .hi[valor nulo], `\(p_0\)`.
+
+---
+
+**Continuación del ejemplo:** La muestra de Pew Research mostró que 37% de los adultos estadounidenses apoya el uso incrementado de carbón. ¿37% representa una diferencia real de la hipótesis nula de 50%? ¿Cómo se vería la distribución muestral de `\(\hat{p}\)` si la hipótesis nula fuera verdadera?
+
+--
+
+**Solución:** Si `\(H_0\)` fuera verdadera, la proporción poblacional sería el valor nulo, 0.5.
+
+**Independencia.** Muestra aleatoria simple—satisfecha.
+
+**Éxito-fracaso.** (Usando el valor **nulo**, primera diferencia procesal respecto a los intervalos de confianza):
+
+$$ np_0=1000\times0.5=500 \qquad n(1-p_0)=1000\times0.5=500 $$
+
+---
+
+
+``` r
+np0 &lt;- 1000*0.5; np0
+```
+
+```
+#&gt; [1] 500
+```
+
+--
+
+$$ SE_{\hat{p}}=\sqrt{\dfrac{p_0(1-p_0)}{n}}=\sqrt{\dfrac{0.5\times0.5}{1000}}=0.016 $$
+
+
+``` r
+sqrt(0.5*0.5/1000)
+```
+
+```
+#&gt; [1] 0.01581139
+```
+
+Esta es la otra diferencia procesal: como la distribución muestral se determina bajo la proporción nula, se usa `\(p_0\)` en lugar de `\(\hat{p}\)` para calcular el error estándar.
+
+--
+
+Si `\(H_0\)` fuera verdadera, la proporción muestral debería seguir una normal con media 0.5 y error estándar 0.016.
+
+---
+
+## Verificando éxito-fracaso y calculando `\(SE_{\hat{p}}\)` para una prueba de hipótesis
+
+Al usar el método del valor-*p*, verificamos las condiciones para `\(\hat{p}\)` y construimos el error estándar usando el .hi[valor nulo], `\(p_0\)`, en lugar de usar la proporción muestral. Estamos suponiendo que la hipótesis nula es verdadera—una mentalidad diferente a cuando calculamos un intervalo de confianza.
+
+--
+
+Esta distribución muestral bajo la hipótesis nula tiene un nombre especial: la .hi[distribución nula].
+
+--
+
+**Ejemplo:** Si la hipótesis nula fuera verdadera, determina la probabilidad de encontrar `\(\hat{p}\)` al menos tan lejos en las colas como 0.37, bajo la distribución nula `\(N(\mu=0.5, SE=0.016)\)`.
+
+---
+
+**Solución:**
+
+$$ Z=\dfrac{0.37-0.5}{0.016}=-8.125 $$
+
+--
+
+
+``` r
+z_coal &lt;- (0.37 - 0.5)/0.016; z_coal
+```
+
+```
+#&gt; [1] -8.125
+```
+
+``` r
+2 * pnorm(z_coal)
+```
+
+```
+#&gt; [1] 4.473624e-16
+```
+
+El área de cola es aproximadamente `\(2.2\times10^{-16}\)`. Las posibles `\(\hat{p}\)`'s en la cola superior más allá de 0.63 también representan observaciones al menos tan extremas. Para contarlas, duplicamos la cola inferior: valor-*p* `\(\approx4.4\times10^{-16}\)`. El valor-*p* representa la probabilidad de observar una proporción muestral tan extrema por azar, si la hipótesis nula fuera verdadera.
+
+---
+
+¿Cómo deberíamos evaluar las hipótesis usando el valor-*p* de `\(4.4\times10^{-16}\)`? Usa `\(\alpha=0.05\)`.
+
+--
+
+**Solución:** Si `\(H_0\)` fuera verdadera, hay una probabilidad increíblemente pequeña de observar una desviación tan extrema. Esto significa que uno de los siguientes debe ser verdadero:
+
+1. La hipótesis nula es verdadera, y observamos algo tan extremo que solo ocurre aproximadamente una vez en cada 23 mil billones.
+2. La hipótesis alternativa es verdadera.
+
+--
+
+El primer escenario es risiblemente improbable, mientras que el segundo parece mucho más plausible. Como el valor-*p* es menor que `\(\alpha\)`, .hi[rechazamos la hipótesis nula]. Los datos indican que una mayoría de estadounidenses **no** apoya expandir el uso de energía de carbón.
+
+---
+
+## Compara el valor-*p* con `\(\alpha\)` para evaluar `\(H_0\)`
+
+Cuando el valor-*p* es menor que `\(\alpha\)`, rechaza `\(H_0\)`: los datos proveen evidencia fuerte a favor de la alternativa. Cuando el valor-*p* es mayor que `\(\alpha\)`, no rechaces `\(H_0\)`: no tenemos evidencia suficiente para rechazar la nula.
+
+--
+
+**Ejemplo:** ¿Una mayoría de estadounidenses apoya u opone la reducción de armas nucleares? Establece las hipótesis.
+
+--
+
+**Solución:** `\(H_0: p=0.50\)`. `\(H_A: p\neq0.50\)`.
+
+--
+
+**Se tiene:** Una muestra aleatoria simple de 1028 adultos de EE.UU. en marzo de 2013 muestra que 56% apoya la reducción de armas nucleares. ¿Esto provee evidencia convincente de que una mayoría apoyaba la reducción, al nivel de significancia del 5%?
+
+---
+
+**(1)** Independencia: satisfecha. Éxito-fracaso (con `\(p_0=0.5\)`): `\(np_0=n(1-p_0)=514\geq10\)`.
+
+$$ SE_{\hat{p}}=\sqrt{\dfrac{0.5\times0.5}{1028}}=0.0156 $$
+
+$$ Z=\dfrac{0.56-0.50}{0.0156}=3.85 $$
+
+---
+
+
+``` r
+se_nuc &lt;- sqrt(0.5*0.5/1028)
+z_nuc &lt;- (0.56-0.50)/se_nuc
+se_nuc; z_nuc
+```
+
+```
+#&gt; [1] 0.01559457
+```
+
+```
+#&gt; [1] 3.847493
+```
+
+``` r
+2*(1-pnorm(z_nuc))
+```
+
+```
+#&gt; [1] 0.0001193328
+```
+
+El valor-*p* es aproximadamente 0.0002. Como es menor a 0.05, .hi[rechazamos `\(H_0\)`]: hay evidencia convincente de que una mayoría apoyaba la reducción de armas nucleares.
+
+---
+
+## Prueba de hipótesis para una sola proporción
+
+**Preparar.** Identifica el parámetro de interés, lista las hipótesis, identifica el nivel de significancia, y `\(\hat{p}\)` y `\(n\)`.
+
+--
+
+**Verificar.** Verifica las condiciones para asegurar que `\(\hat{p}\)` sea casi normal bajo `\(H_0\)`. Usa el .hi[valor nulo] para verificar la condición de éxito-fracaso.
+
+--
+
+**Calcular.** Si las condiciones se cumplen, calcula el error estándar (usando `\(p_0\)`), calcula el Z-score, e identifica el valor-*p*.
+
+--
+
+**Concluir.** Evalúa la prueba comparando el valor-*p* con `\(\alpha\)`, y provee una conclusión en el contexto del problema.
+
+---
+layout: true
+
+# Eligiendo un nivel de significancia
+---
+
+Elegir un nivel de significancia es importante en muchos contextos, y el nivel tradicional es `\(\alpha=0.05\)`. Sin embargo, puede ser útil ajustar el nivel de significancia según la aplicación.
+
+--
+
+- Si cometer un .hi[Error Tipo 1] es peligroso o especialmente costoso, deberíamos elegir un nivel de significancia pequeño (p. ej., 0.01)—queremos ser muy cautelosos antes de rechazar `\(H_0\)`.
+
+--
+
+- Si un .hi[Error Tipo 2] es relativamente más peligroso o costoso, podríamos elegir un nivel más alto (p. ej., 0.10)—queremos ser cautelosos de no fallar en rechazar `\(H_0\)` cuando la alternativa es en realidad verdadera.
+
+--
+
+- Si el costo de recolectar datos es pequeño en relación con el costo de un Error Tipo 2, puede ser buena estrategia recolectar más datos: el Error Tipo 2 se reduce sin afectar la tasa de Error Tipo 1.
+
+---
+
+**Ejemplo:** Un fabricante de automóviles considera cambiar a equipo de mayor calidad que construye bisagras de puertas. Ahorrarían dinero si el nuevo equipo produce bisagras defectuosas menos del 0.2% de las veces. ¿Hay razón para modificar el nivel de significancia?
+
+--
+
+**Solución:** `\(H_0\)`: la tasa de bisagras defectuosas es 0.2%. Esta decisión tiene un impacto marginal en la empresa. Un nivel de significancia de 0.05 parece razonable, ya que ni el Error Tipo 1 ni el Tipo 2 deberían ser peligrosos o mucho más costosos.
+
+--
+
+**Ejemplo:** El mismo fabricante considera un proveedor ligeramente más caro para partes relacionadas con .hi[seguridad]. Si la durabilidad es mejor, cambiarán de proveedor. ¿Hay razón para modificar el nivel de significancia?
+
+---
+
+**Solución:** Como la seguridad está involucrada, la empresa debería estar dispuesta a cambiar (rechazar `\(H_0\)`) incluso si la evidencia de mayor seguridad es solo moderadamente fuerte. Un nivel de significancia ligeramente mayor, como `\(\alpha=0.10\)`, podría ser apropiado.
+
+--
+
+## ¿Por qué 0.05 es el valor predeterminado?
+
+El umbral `\(\alpha=0.05\)` es el más común, aunque podría argumentarse que debería ser más pequeño o más grande. Este es, en gran medida, un asunto de convención histórica.
+
+---
+layout: true
+# Diferencia entre significancias 
+## Significancia estadística vs significancia práctica
+---
+
+Cuando el tamaño de muestra se hace más grande, las estimaciones puntuales se vuelven más precisas, y cualquier diferencia real entre la media y el valor nulo se vuelve más fácil de detectar.
+
+--
+
+Incluso una diferencia muy pequeña probablemente sería detectada si tomáramos una muestra suficientemente grande. A veces los investigadores toman muestras tan grandes que hasta la más mínima diferencia se detecta, aunque no tenga valor práctico.
+
+--
+
+En tales casos, seguimos diciendo que la diferencia es .hi[estadísticamente significativa], pero no es .hi[prácticamente significativa]. Por ejemplo, un experimento en línea podría identificar que colocar anuncios adicionales en un sitio de reseñas de películas aumenta estadísticamente significativamente la audiencia de un programa de TV en 0.001%, pero este incremento podría no tener valor práctico alguno.
+
+---
+
+Un rol del científico de datos al conducir un estudio a menudo incluye planificar el .hi[tamaño del estudio]. Se consultaría primero a expertos o literatura científica para conocer la diferencia mínima significativa respecto al valor nulo, y se obtendría una estimación aproximada de `\(p\)` para estimar el error estándar. A partir de ahí, se puede sugerir un tamaño de muestra suficientemente grande para detectar una diferencia real y significativa.
+
+---
+exclude: true
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

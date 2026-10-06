@@ -1,0 +1,1317 @@
+---
+title: "Probabilidad"
+subtitle: "Diplomado en Economía Aplicada: Estadística Aplicada"
+author: "Luis Fernando Escobar — lfernandoescobarc@gmail.com<br>Business School - UAGRM"
+date: "Septiembre 2026"
+output:
+  xaringan::moon_reader:
+    css: ['default', 'metropolis', 'metropolis-fonts', 'my-css.css']
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: inverse, middle
+
+```{r Setup, include = F}
+options(htmltools.dir.version = FALSE)
+library(pacman)
+p_load(broom, ggplot2, ggthemes, dplyr, knitr, tibble, tidyr, ggforce, gridExtra)
+red_pink <- "#e64173"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 6,
+  fig.width = 9,
+  warning = F,
+  message = F
+)
+theme_axes <- theme_minimal() + theme(
+  text = element_text(size = 16),
+  panel.grid.minor = element_blank(),
+  legend.position = "none"
+)
+```
+
+# Probabilidad
+
+---
+# Probabilidad
+
+.pseudocode-small[
+
+**1** Definiendo la probabilidad
+
+**2** Probabilidad condicional
+
+**3** Muestreo de una población pequeña
+
+**4** Variables aleatorias
+
+**5** Distribuciones continuas
+
+]
+
+
+---
+layout: true
+# La probabilidad
+---
+class: inverse, middle
+---
+
+La estadística se basa en la probabilidad, y aunque la probabilidad no es requisito para las técnicas aplicadas de este curso, puede ayudarte a obtener una comprensión más profunda de los métodos y sentar una mejor base para cursos futuros.
+
+---
+layout: true
+# Ejemplos de probabilidad
+---
+
+Antes de entrar en ideas técnicas, repasemos algunos ejemplos básicos que quizás resulten más familiares.
+
+**Ejemplo 1:** Un "dado" es un cubo con seis caras numeradas 1, 2, 3, 4, 5, y 6. ¿Cuál es la probabilidad de obtener 1 al lanzar un dado?
+
+--
+
+**Solución:** Si el dado es justo, la probabilidad de obtener un 1 es igual a la de cualquier otro número. Como hay seis resultados, la probabilidad debe ser 1-en-6, o equivalentemente, .hi[1/6].
+
+--
+
+**Ejemplo 2:** ¿Cuál es la probabilidad de obtener un 1 o un 2 en el siguiente lanzamiento?
+
+--
+
+**Solución:** 1 y 2 constituyen dos de los seis resultados igualmente probables, así que la probabilidad de obtener uno de estos dos resultados debe ser $2/6 = 1/3$.
+
+---
+
+**Ejemplo 3:** ¿Cuál es la probabilidad de obtener 1, 2, 3, 4, 5, o 6 en el siguiente lanzamiento?
+
+--
+
+**Solución:** 100%. El resultado debe ser uno de estos números.
+
+--
+
+**Ejemplo 4:** ¿Cuál es la probabilidad de **no** obtener un 2?
+
+--
+
+**Solución:** Como la probabilidad de obtener un 2 es $1/6$ o $16.\overline{6}\%$, la probabilidad de no obtener un 2 debe ser $100\% - 16.\overline{6}\% = 83.\overline{3}\%$ o $5/6$.
+
+--
+
+Alternativamente, podríamos haber notado que no obtener un 2 es lo mismo que obtener 1, 3, 4, 5, o 6, lo cual constituye cinco de los seis resultados igualmente probables, con probabilidad $5/6$.
+
+---
+
+**Ejemplo 5:** Considera lanzar dos dados. Si 1/6 de las veces el primer dado es un 1, y 1/6 de esas veces el segundo dado también es un 1, ¿cuál es la probabilidad de obtener dos 1s?
+
+--
+
+**Solución:** Si $16.\overline{6}$% de las veces el primer dado es un 1, y 1/6 de esas veces el segundo dado también es un 1, entonces la probabilidad de que ambos dados sean 1 es $(1/6) \times (1/6) = 1/36$.
+
+---
+layout: true
+# Definiendo la probabilidad
+
+---
+
+Usamos la probabilidad para construir herramientas que describan y entiendan la aparente aleatoriedad. A menudo enmarcamos la probabilidad en términos de un .hi[proceso aleatorio] que da lugar a un .hi[resultado].
+
+$$ \text{Lanzar un dado} \to 1, 2, 3, 4, 5, \text{ o } 6 $$
+$$ \text{Lanzar una moneda} \to \text{H o T (cara o cruz)} $$
+
+--
+
+Lanzar un dado o una moneda es un proceso aparentemente aleatorio, y cada uno da lugar a un resultado.
+
+--
+
+La **probabilidad** de un resultado es la proporción de veces que ese resultado ocurriría si observáramos el proceso aleatorio un número infinito de veces.
+
+---
+
+La probabilidad se define como una proporción, y siempre toma valores entre 0 y 1 (inclusive). También puede expresarse como un porcentaje entre 0% y 100%.
+
+--
+
+La probabilidad puede ilustrarse lanzando un dado muchas veces. Sea $\hat{p}_n$ la proporción de resultados que son 1 después de los primeros $n$ lanzamientos.
+
+--
+
+A medida que aumenta el número de lanzamientos, $\hat{p}_n$ converge a la probabilidad de obtener un 1, $p=1/6$.
+
+---
+
+```{R, lln sim, echo = F, fig.height = 6.5}
+set.seed(42)
+n_max <- 100000
+rolls <- sample(1:6, n_max, replace = TRUE)
+is_one <- as.integer(rolls == 1)
+phat <- cumsum(is_one) / seq_len(n_max)
+idx <- unique(round(10^seq(0, log10(n_max), length.out = 400)))
+df_lln <- tibble(n = idx, phat = phat[idx])
+ggplot(df_lln, aes(x = n, y = phat)) +
+  geom_line(color = "steelblue") +
+  geom_hline(yintercept = 1/6, linetype = "dashed") +
+  scale_x_log10() +
+  labs(x = "n (número de lanzamientos)", y = expression(hat(p)[n])) +
+  theme_axes
+```
+
+--
+
+La tendencia de $\hat{p}_n$ a estabilizarse alrededor de $p$ se describe mediante la .hi[Ley de los Grandes Números].
+
+---
+## Ley de los grandes números 
+
+A medida que se recolectan más observaciones, la proporción $\hat{p}_n$ de ocurrencias con un resultado particular .hi[converge] a la probabilidad $p$ de ese resultado.
+
+--
+
+Ocasionalmente la proporción se alejará de la probabilidad y parecerá desafiar la Ley de los Grandes Números, como $\hat{p}_n$ hace varias veces en la gráfica previa. Sin embargo, estas desviaciones se vuelven más pequeñas a medida que aumenta el número de lanzamientos.
+
+--
+
+Escribimos $p$ como la probabilidad de obtener un 1. También podemos escribir esta probabilidad como $P(\text{obtener un } 1)$. Si el proceso es claro, podemos abreviar $P(\text{obtener un }1)$ como $P(1)$.
+
+---
+layout: true
+# Definiendo la probabilidad
+## Resultados disjuntos o mutuamente excluyentes
+---
+
+Dos resultados se llaman .hi[disjuntos] o .hi[mutuamente excluyentes] si **no pueden ocurrir ambos**.
+
+--
+
+Por ejemplo, al lanzar un dado, los resultados 1 y 2 son disjuntos, ya que no pueden ocurrir ambos. Por otro lado, los resultados 1 y "obtener un número impar" **no** son disjuntos, ya que ambos ocurren si el resultado del lanzamiento es 1.
+
+--
+
+Los términos *disjunto* y *mutuamente excluyente* son equivalentes e intercambiables.
+
+---
+
+Calcular la probabilidad de resultados disjuntos es fácil. Al lanzar un dado, los resultados 1 y 2 son disjuntos, y calculamos la probabilidad de que ocurra uno de ellos sumando sus probabilidades por separado:
+
+$$ P(1 \text{ o } 2) = P(1) + P(2) = 1/6 + 1/6 = 1/3 $$
+
+--
+
+¿Y la probabilidad de obtener 1, 2, 3, 4, 5, o 6? Aquí también todos los resultados son disjuntos, así que sumamos las probabilidades:
+
+$$ P(1 \text{ o } 2 \text{ o } 3 \text{ o } 4 \text{ o } 5 \text{ o } 6) = \dfrac{1}{6}\times 6 = 1 $$
+
+--
+
+La .hi[Regla de la Adición] garantiza la validez de este enfoque cuando los resultados son disjuntos.
+
+---
+
+### Regla de la adición para resultados disjuntos
+
+Si $A_1$ y $A_2$ representan dos resultados disjuntos, la probabilidad de que ocurra uno de ellos es
+
+$$ P(A_1 \text{ o } A_2) = P(A_1) + P(A_2) $$
+
+Si hay muchos resultados disjuntos $A_1, \ldots, A_k$, la probabilidad de que ocurra uno de ellos es $P(A_1) + P(A_2) + \cdots + P(A_k)$.
+
+---
+layout: true
+# Definiendo la probabilidad
+## Práctica: Eventos y diagramas de Venn
+---
+
+Los científicos de datos rara vez trabajan con resultados individuales, y en su lugar consideran .hi[conjuntos] o .hi[colecciones] de resultados.
+
+--
+
+Sea $A$ el evento donde un lanzamiento de dado resulta en 1 o 2, y $B$ el evento de que el lanzamiento sea 4 o 6. Escribimos $A=\{1,2\}$ y $B=\{4,6\}$. Estos conjuntos se llaman comúnmente .hi[eventos].
+
+--
+
+Como $A$ y $B$ no tienen elementos en común, son .hi[eventos disjuntos].
+
+---
+
+```{R, venn32, echo = F, fig.height = 5}
+ggplot() +
+  annotate("text", x = c(1,2,3,4,5,6), y = 1, label = 1:6, size = 8) +
+  annotate("rect", xmin = 0.6, xmax = 2.4, ymin = 0.6, ymax = 1.4, fill = NA, color = "steelblue", linetype = "dashed", size=1) +
+  annotate("rect", xmin = 3.6, xmax = 4.4, ymin = 0.6, ymax = 1.4, fill = NA, color = red_pink, linetype = "dotted", size=1) +
+  annotate("rect", xmin = 5.6, xmax = 6.4, ymin = 0.6, ymax = 1.4, fill = NA, color = red_pink, linetype = "dotted", size=1) +
+  annotate("text", x = 1.5, y = 1.6, label = "A", color = "steelblue", size = 6) +
+  annotate("text", x = 5, y = 1.6, label = "B", color = red_pink, size = 6) +
+  xlim(0.3, 6.7) + ylim(0.3, 1.9) + theme_void()
+```
+
+**Figura:** Tres eventos, $A$, $B$, y $D$, formados por resultados de lanzar un dado. $A$ y $B$ son disjuntos porque no tienen resultados en común.
+
+---
+
+La Regla de la Adición aplica tanto a resultados disjuntos como a eventos disjuntos. La probabilidad de que ocurra uno de los eventos disjuntos $A$ o $B$ es la suma de las probabilidades por separado:
+
+$$ P(A \text{ o } B) = P(A) + P(B) = 1/3 + 1/3 = 2/3 $$
+
+
+---
+layout: true
+# Definiendo la probabilidad
+## Cuando los eventos no son disjuntos
+---
+
+Consideremos cálculos para dos eventos que **no** son disjuntos, en el contexto de una baraja regular de 52 cartas.
+
+--
+
+Los 52 cartas se dividen en cuatro .hi[palos]: ♣ (trébol), ♦ (diamante), ♥ (corazón), ♠ (espada). Cada palo tiene 13 cartas: 2, 3, …, 10, J (jota), Q (reina), K (rey), y A (as). Las 12 cartas J, Q, K se llaman .hi[cartas de figura] (*face cards*).
+
+--
+
+**Práctica** 
+
+(a) ¿Cuál es la probabilidad de que una carta seleccionada al azar sea un diamante? 
+
+(b) ¿Cuál es la probabilidad de que sea una carta de figura?
+
+---
+
+```{R, gp312}
+Pdiamond <- 13/52
+Pface <- 12/52
+Pdiamond; Pface
+```
+
+**Solución:** 
+
+(a) $P(\diamond) = 13/52 = 0.250$. 
+
+(b) $P(\text{figura}) = 12/52 = 0.231$.
+
+---
+
+Los .hi[diagramas de Venn] son útiles cuando los resultados pueden categorizarse como "dentro" o "fuera" para dos o tres variables, atributos, o procesos aleatorios.
+
+--
+
+Sea $A$ el evento de que una carta seleccionada al azar sea un diamante, y $B$ el evento de que sea una carta de figura. Los eventos $A$ y $B$ **no** son disjuntos—las cartas J♦, Q♦, y K♦ caen en ambas categorías.
+
+---
+
+```{R, venn34, echo = F, fig.height = 5}
+library(ggforce)
+ggplot() +
+  geom_circle(aes(x0=0, y0=0, r=1.3), fill = "steelblue", alpha = 0.3, color=NA) +
+  geom_circle(aes(x0=1.1, y0=0, r=1.3), fill = "orange", alpha = 0.3, color=NA) +
+  annotate("text", x = -0.7, y = 0, label = "10\n0.1923", size = 6) +
+  annotate("text", x = 0.55, y = 0, label = "3\n0.0577", size = 6) +
+  annotate("text", x = 1.8, y = 0, label = "9\n0.1731", size = 6) +
+  annotate("text", x = -0.3, y = 1.8, label = "Diamantes, 0.2500", color = "steelblue", size = 5) +
+  annotate("text", x = 0.55, y = -1.8, label = "Cartas de figura, 0.2308", color = "darkorange3", size = 5) +
+  coord_fixed() + xlim(-2.2, 3.2) + ylim(-2.5, 2.5) + theme_void()
+```
+
+**Figura:** Diagrama de Venn para diamantes y cartas de figura (también hay 30 cartas que no son ni diamantes ni figuras).
+
+---
+
+No se puede usar la Regla de la Adición para eventos disjuntos. En su lugar, usamos el diagrama de Venn. Empezamos sumando las probabilidades de los dos eventos:
+
+$$ P(A) + P(B) = P(\diamond) + P(\text{figura}) = 13/52 + 12/52 $$
+
+--
+
+Sin embargo, las tres cartas que están en ambos eventos fueron contadas dos veces. Debemos corregir este doble conteo:
+
+$$
+\begin{aligned}
+P(A \text{ o } B) &= P(\diamond \text{ o figura}) \\
+&= P(\diamond) + P(\text{figura}) - P(\diamond \text{ y figura}) \\
+&= 13/52 + 12/52 - 3/52 \\
+&= 22/52 = 11/26
+\end{aligned}
+$$
+
+---
+
+### Regla general de la adición
+
+```{R, venn calc}
+13/52 + 12/52 - 3/52
+```
+
+Esta ecuación es un ejemplo de la .hi[Regla General de la Adición].
+
+
+Si $A$ y $B$ son dos eventos cualesquiera, disjuntos o no, entonces la probabilidad de que al menos uno de ellos ocurra es
+
+$$ P(A \text{ o } B) = P(A) + P(B) - P(A \text{ y } B) $$
+
+donde $P(A \text{ y } B)$ es la probabilidad de que ocurran ambos eventos.
+
+---
+
+### Consejo: "o" es inclusivo
+
+Cuando escribimos "o" en estadística, queremos decir "y/o" a menos que se indique explícitamente lo contrario. Así, "$A$ o $B$ ocurre" significa que ocurre $A$, $B$, o ambos $A$ y $B$.
+
+---
+
+**Ejemplo:** Se tiene un conjunto de datos de 10,000 préstamos (clientes de un banco): 1,495 provenían de solicitudes conjuntas (p. ej., una pareja solicitó junta), 4,789 solicitantes tenían hipoteca, y 950 tenían ambas características. Crea un diagrama de Venn.
+
+Se quiere conocer:
+
+(a) ¿Probabilidad de que un préstamo sea de solicitud conjunta con hipoteca? 
+
+(b) ¿Probabilidad de tener alguno de estos atributos? 
+
+---
+
+```{R, gp314, echo = F, fig.height = 4}
+ggplot() +
+  geom_circle(aes(x0=0, y0=0, r=1.3), fill = "steelblue", alpha = 0.3, color=NA) +
+  geom_circle(aes(x0=1.1, y0=0, r=1.3), fill = "orange", alpha = 0.3, color=NA) +
+  annotate("text", x = -0.7, y = 0, label = "3839\n0.384", size = 5.5) +
+  annotate("text", x = 0.55, y = 0, label = "950\n0.095", size = 5.5) +
+  annotate("text", x = 1.8, y = 0, label = "545\n0.055", size = 5.5) +
+  annotate("text", x = -0.3, y = 1.8, label = "Solicitante tiene hipoteca", color = "steelblue", size = 5) +
+  annotate("text", x = 0.55, y = -1.8, label = "Solicitud conjunta", color = "darkorange3", size = 5) +
+  annotate("text", x = 0.55, y = -2.3, label = "Otros préstamos: 4666 (0.467)", size = 4.5) +
+  coord_fixed() + xlim(-2.2, 3.2) + ylim(-3.0, 2.5) + theme_void()
+```
+
+**Solución:** 
+
+(a) .hi[0.095]. 
+
+(b) $0.384+0.095+0.055=0.534$.
+
+---
+layout: true
+# Definiendo la probabilidad
+## Distribuciones de probabilidad
+---
+
+Distribución de probabilidad para la suma de dos dados.
+
+```{R, dice sum dist}
+dice_sum <- tibble(
+  suma = 2:12,
+  prob = c(1,2,3,4,5,6,5,4,3,2,1)/36
+)
+dice_sum
+```
+
+
+
+---
+
+### Reglas para las distribuciones de probabilidad
+
+
+Una distribución de probabilidad es una lista o tabla de todos los resultados (disjuntos) posibles con sus probabilidades correspondientes, que satisface tres reglas:
+
+1. Los resultados listados deben ser .hi[disjuntos].
+2. Cada probabilidad debe estar .hi[entre 0 y 1].
+3. Las probabilidades deben .hi[sumar 1].
+
+---
+
+**Práctica:** Se proponen tres distribuciones para el ingreso familiar en Bolivia. Solo una es correcta.
+
+| Rango de ingreso | 0–2k | 2k–5k | 5k–10k | 10k+ |
+|---|---|---|---|---|
+| (a) | 0.18 | 0.39 | 0.33 | 0.16 |
+| (b) | 0.38 | -0.27 | 0.52 | 0.37 |
+| (c) | 0.28 | 0.27 | 0.29 | 0.16 |
+
+--
+
+**Solución:** Las probabilidades de (a) no suman 1. 
+
+--
+
+La segunda probabilidad en (b) es negativa.
+
+--
+
+Queda (c), que sí satisface los requisitos de una distribución.
+
+---
+
+```{R, dice sum plot, echo = F, fig.height = 4.5}
+ggplot(dice_sum, aes(x = factor(suma), y = prob)) +
+  geom_col(fill = "steelblue") +
+  labs(x = "Suma de los dados", y = "Probabilidad") +
+  theme_axes
+```
+
+**Figura:** La distribución de probabilidad de la suma de dos dados.
+
+--
+
+Si los resultados son numéricos y discretos, usualmente es (visualmente) conveniente hacer un gráfico de barras que se asemeje a un histograma, como en el caso de la suma de dos dados.
+
+---
+layout: true
+# Definiendo la probabilidad
+## Complemento de un evento
+---
+
+Lanzar un dado produce un valor en el conjunto $\{1,2,3,4,5,6\}$. Este conjunto de todos los resultados posibles se llama el .hi[espacio muestral] (**S**).
+
+--
+
+Sea $D=\{2,3\}$ el evento de que el resultado de un lanzamiento sea 2 o 3. Entonces el .hi[complemento] de $D$ representa todos los resultados en nuestro espacio muestral que **no** están en $D$, denotado $D^c = \{1,4,5,6\}$.
+
+--
+
+Un complemento de un evento $A$ se construye con dos propiedades importantes: (i) todo resultado posible que no está en $A$ está en $A^c$, y (ii) $A$ y $A^c$ son disjuntos.
+
+---
+
+### Complemento
+
+El complemento del evento $A$ se denota $A^c$, y representa todos los resultados que no están en $A$. $A$ y $A^c$ están matemáticamente relacionados:
+
+$$ P(A) + P(A^c) = 1, \quad \text{es decir,} \quad P(A) = 1 - P(A^c) $$
+
+--
+
+En ejemplos simples, calcular $A$ o $A^c$ es factible en pocos pasos. Sin embargo, usar el complemento puede ahorrar mucho tiempo cuando los problemas crecen en complejidad.
+
+---
+
+**Práctica** Encuentra las siguientes probabilidades al lanzar dos dados:
+
+a. La suma de los dados **no** es 6.
+b. La suma es al menos 4, es decir, el evento $B=\{4,5,\ldots,12\}$.
+c. La suma es como máximo 10, es decir, el evento $D=\{2,3,\ldots,10\}$.
+
+```{R, gp320}
+P6 <- 5/36
+1 - P6         # (a)
+1 - (1/36 + 2/36)   # (b) usando el complemento de {2,3}
+```
+
+---
+
+```{R, gp3202}
+1 - (2/36 + 1/36)   # (c) usando el complemento de {11,12}
+```
+
+
+**Solución:** 
+
+(a) $P(\text{no }6) = 1-5/36 = 31/36$. 
+
+--
+
+(b) $P(B) = 1-1/12 = 11/12$. 
+
+--
+
+(c) $P(D) = 1-1/12 = 11/12$.
+
+---
+layout: true
+# Definiendo la probabilidad
+## Independencia
+---
+
+Así como las variables y observaciones pueden ser independientes, los procesos aleatorios también pueden serlo. Dos procesos son .hi[independientes] si conocer el resultado de uno **no** provee información útil sobre el resultado del otro.
+
+--
+
+Lanzar una moneda y lanzar un dado son dos procesos independientes—conocer que la moneda salió cara no ayuda a determinar el resultado del dado.
+
+--
+
+Por otro lado, los precios de las acciones usualmente se mueven juntos hacia arriba o hacia abajo, así que **no** son independientes.
+
+---
+
+**Ejemplo:** ¿Qué pasa si también hay un dado azul, independiente de los otros dos? ¿Cuál es la probabilidad de lanzar los tres dados y obtener todos 1s?
+
+$$ P(\text{blanco}=1 \text{ y rojo}=1 \text{ y azul}=1) = (1/6)\times(1/6)\times(1/6) = 1/216 $$
+
+```{R, ex321}
+(1/6)^3
+```
+
+---
+
+### Regla de la multiplicación para procesos independientes
+
+Si $A$ y $B$ representan eventos de dos procesos diferentes e independientes, la probabilidad de que ocurran ambos es el producto de sus probabilidades:
+
+$$ P(A \text{ y } B) = P(A) \times P(B) $$
+
+Si hay $k$ eventos $A_1, \ldots, A_k$ de $k$ procesos independientes, la probabilidad de que ocurran todos es $P(A_1)\times P(A_2)\times \cdots \times P(A_k)$.
+
+---
+
+**Práctica:** Aproximadamente 9% de las personas son zurdas. Se seleccionan 2 personas al azar de la población de Santa Cruz.
+
+a. ¿Probabilidad de que ambas sean zurdas?
+b. ¿Probabilidad de que ambas sean diestras?
+
+```{R, gp322}
+0.09 * 0.09
+0.91 * 0.91
+```
+
+---
+
+Supongamos que las variables *lateralidad* y *sexo* son independientes. Entonces podemos calcular la probabilidad de que una persona seleccionada al azar sea diestra y mujer usando la Regla de la Multiplicación:
+
+$$ P(\text{diestra y mujer}) = P(\text{diestra})\times P(\text{mujer}) = 0.91\times 0.50 = 0.455 $$
+
+--
+
+A veces nos preguntamos si un resultado provee información útil sobre otro. Decimos que dos eventos $A$ y $B$ son .hi[independientes] si satisfacen $P(A \text{ y } B) = P(A)\times P(B)$.
+
+---
+
+**Ejemplo:** Si barajamos una baraja de cartas y sacamos una, ¿es el evento "la carta es un corazón" independiente del evento "la carta es un as"?
+
+$$ P(\heartsuit)\times P(\text{as}) = \dfrac{1}{4}\times\dfrac{1}{13} = \dfrac{1}{52} = P(\heartsuit \text{ y as}) $$
+
+Como la igualdad se cumple, los dos eventos **son independientes**.
+
+---
+layout: false
+class: inverse, middle
+
+# Probabilidad Condicional
+
+---
+layout: true
+# Probabilidad condicional
+---
+
+Puede haber relaciones entre dos o más variables que son útiles de entender. Por ejemplo, una aseguradora de autos considerará información sobre el historial de manejo de una persona para evaluar el riesgo de que sea responsable de un accidente.
+
+--
+
+Este tipo de relaciones son el dominio de las .hi[probabilidades condicionales].
+
+---
+layout: true
+# Probabilidad condicional
+## Explorando probabilidades con una tabla de contingencia
+---
+
+El conjunto de datos `photo_classify` representa una muestra de 1,822 fotos de un sitio para compartir fotos. Cada foto recibe dos clasificaciones: `mach_learn` (predicción de un sistema de aprendizaje automático: `pred_fashion` o `pred_not`) y `truth` (clasificación humana, la fuente de verdad: `fashion` o `not`).
+
+---
+
+```{R, photo classify}
+photo <- tibble(
+  mach_learn = c("pred_fashion", "pred_fashion", "pred_not", "pred_not"),
+  truth = c("fashion", "not", "fashion", "not"),
+  n = c(197, 22, 112, 1491)
+)
+tabla_cont <- xtabs(n ~ mach_learn + truth, data = photo)
+addmargins(tabla_cont)
+```
+
+Tabla de contingencia resumiendo `photo_classify`.
+
+---
+
+**Ejemplo** Si una foto es realmente sobre moda, ¿cuál es la probabilidad de que el clasificador ML la haya identificado correctamente como moda?
+
+--
+
+**Solución:** De las 309 fotos de moda, el algoritmo ML clasificó correctamente 197:
+
+$$ P(\texttt{mach\_learn} \text{ es pred\_fashion dado } \texttt{truth} \text{ es fashion}) = \dfrac{197}{309} = 0.638 $$
+
+```{R, ex326}
+197/309
+```
+
+---
+
+**Ejemplo:** Se muestrea una foto y sabemos que el algoritmo ML predijo que **no** era sobre moda. ¿Cuál es la probabilidad de que se haya equivocado y la foto sí sea sobre moda?
+
+$$ P(\texttt{truth} \text{ es fashion dado } \texttt{mach\_learn} \text{ es pred\_not}) = \dfrac{112}{1603} = 0.070 $$
+
+```{R, ex327}
+112/1603
+```
+
+---
+layout: true
+# Probabilidad condicional
+## Probabilidades marginales y conjuntas
+---
+
+La Tabla de contingencia `photo_classify` incluye totales de fila y columna para cada variable por separado. Estos totales representan .hi[probabilidades marginales]—probabilidades basadas en una sola variable, sin considerar otras variables.
+
+$$ P(\texttt{mach\_learn} \text{ es pred\_fashion}) = \dfrac{219}{1822} = 0.12 $$
+
+--
+
+Una probabilidad de resultados para dos o más variables o procesos se llama .hi[probabilidad conjunta]:
+
+$$ P(\texttt{mach\_learn} \text{ es pred\_fashion y } \texttt{truth} \text{ es fashion}) = \dfrac{197}{1822} = 0.11 $$
+
+---
+
+### Probabilidades marginales y conjuntas
+
+Si una probabilidad se basa en una sola variable, es una .hi[probabilidad marginal]. La probabilidad de resultados para dos o más variables o procesos se llama .hi[probabilidad conjunta].
+
+--
+
+Usamos proporciones de tabla para resumir las probabilidades conjuntas de la muestra `photo_classify`, dividiendo cada conteo entre el total, 1,822.
+
+```{R, joint prob table}
+tabla_prop <- prop.table(tabla_cont)
+round(addmargins(tabla_prop), 4)
+```
+
+Tabla de probabilidades resumiendo `photo_classify`.
+
+---
+
+Podemos calcular probabilidades marginales usando probabilidades conjuntas: la probabilidad de que una foto aleatoria sea sobre moda se encuentra sumando los resultados donde `truth` toma el valor `fashion`:
+
+$$ P(\texttt{truth} \text{ es fashion}) = 0.1081 + 0.0615 = 0.1696 $$
+
+---
+layout: true
+# Probabilidad condicional
+## Definiendo la probabilidad condicional
+---
+
+El clasificador ML predice si una foto es sobre moda, aunque no es perfecto. Nos gustaría entender mejor cómo usar información de una variable como `mach_learn` para mejorar nuestra estimación de probabilidad de una segunda variable, `truth`.
+
+--
+
+La probabilidad de que una foto aleatoria del conjunto de datos sea sobre moda es aproximadamente 0.17. Si supiéramos que el clasificador predijo que la foto era sobre moda, ¿podríamos obtener una mejor estimación?
+
+--
+
+Sí. Limitamos nuestra vista a solo esos 219 casos donde el ML predijo moda, y observamos la fracción donde la foto realmente era sobre moda:
+
+$$ P(\texttt{truth} \text{ es fashion dado } \texttt{mach\_learn} \text{ es pred\_fashion}) = \dfrac{197}{219} = 0.900 $$
+
+---
+
+Llamamos a esto una .hi[probabilidad condicional] porque la calculamos bajo una **condición**: la predicción del clasificador ML dijo que la foto era sobre moda.
+
+--
+
+Hay dos partes en una probabilidad condicional: el .hi[resultado de interés] y la .hi[condición]. Es útil pensar en la condición como información que sabemos que es verdadera.
+
+--
+
+Separamos el texto dentro de la notación de probabilidad en el resultado de interés y la condición con una barra vertical:
+
+$$ P(\texttt{truth} \text{ es fashion} \mid \texttt{mach\_learn} \text{ es pred\_fashion}) = \dfrac{197}{219}=0.900 $$
+
+La barra vertical $"\mid"$ se lee como .hi[dado].
+
+---
+
+$$P(\texttt{truth es fashion} \mid \texttt{mach\_learn es pred\_fashion}) =$$
+$$\dfrac{\#(\texttt{truth es fashion y mach\_learn es pred\_fashion})}{\#(\texttt{mach\_learn es pred\_fashion})} =$$
+$$\dfrac{197}{219}=0.900$$
+
+---
+
+Frecuentemente se nos dan probabilidades marginales y conjuntas en vez de datos de conteo. Supongamos que solo tenemos la información de la Tabla de probabilidades `photo_classify`. Con una muestra de 1000 fotos, esperaríamos que aproximadamente $0.120\times1000=120$ fueran predichas como moda, y $0.108\times1000=108$ cumplieran ambos criterios:
+
+$$ P(\texttt{truth} = \text{fashion} \mid \texttt{mach\_learn} = \text{pred\_fashion}) = \dfrac{0.108}{0.120} = 0.90 $$
+
+```{R, cond calc}
+0.1081/0.1202
+```
+
+---
+
+### Probabilidad condicional
+
+La probabilidad condicional del resultado $A$ dada la condición $B$ se calcula así:
+
+$$ P(A|B) = \dfrac{P(A \text{ y } B)}{P(B)} $$
+
+---
+layout: true
+# Probabilidad condicional
+## Regla general de la multiplicación
+---
+
+Anteriormente presentamos la Regla de la Multiplicación para procesos independientes. Aquí presentamos la .hi[Regla General de la Multiplicación] para eventos que podrían no ser independientes.
+
+### Regla general de la multiplicación
+
+Si $A$ y $B$ representan dos resultados o eventos, entonces
+
+$$ P(A \text{ y } B) = P(A|B)\times P(B) $$
+
+Es útil pensar en $A$ como el resultado de interés y $B$ como la condición. Esta regla es simplemente un reordenamiento de la ecuación de probabilidad condicional.
+
+---
+
+### Suma de probabilidades condicionales
+
+Sean $A_1, \ldots, A_k$ todos los resultados disjuntos de una variable o proceso. Entonces si $B$ es un evento (posiblemente de otra variable o proceso), tenemos:
+
+$$ P(A_1|B) + \cdots + P(A_k|B) = 1 $$
+
+--
+
+La regla del complemento también se cumple cuando un evento y su complemento se condicionan en la misma información:
+
+$$ P(A|B) = 1 - P(A^c|B) $$
+
+
+---
+layout: true
+# Probabilidad condicional
+## Independencia y probabilidad condicional
+---
+
+Si dos eventos son independientes, conocer el resultado de uno no debería proveer información sobre el otro. Podemos mostrar esto matemáticamente usando probabilidades condicionales.
+
+--
+
+**Ejemplo:** Sean $X$ y $Y$ los resultados de lanzar dos dados.
+
+a. $P(X=1) = 1/6$
+
+--
+
+b. $P(X=1 \text{ y } Y=1) = 1/36$
+
+--
+
+c. $P(Y=1|X=1) = \dfrac{1/36}{1/6} = 1/6$
+
+--
+
+d. $P(Y=1) = 1/6$—el mismo valor que (c), lo cual tiene sentido pues $X$ y $Y$ son independientes.
+
+---
+
+$$ P(Y=1 \mid X=1) = \dfrac{P(Y=1 \text{ y } X=1)}{P(X=1)} =$$
+$$\dfrac{P(Y=1)\times P(X=1)}{P(X=1)} = P(Y=1) $$
+
+---
+layout: false
+class: inverse, middle
+
+# Teorema de Bayes
+
+---
+layout: true
+# Probabilidad condicional
+## Teorema de Bayes
+---
+
+En muchos casos, nos dan una probabilidad condicional de la forma
+
+$$ P(\text{afirmación sobre variable 1} \mid \text{afirmación sobre variable 2}) $$
+
+pero realmente nos gustaría conocer la probabilidad condicional .hi[invertida]:
+
+$$ P(\text{afirmación sobre variable 2} \mid \text{afirmación sobre variable 1}) $$
+
+--
+
+En estos casos, aplicamos una fórmula muy útil y general: el .hi[Teorema de Bayes].
+
+---
+
+**Ejemplo:** En Canadá, aproximadamente 0.35% de las mujeres mayores de 40 años desarrollará cáncer de mama en un año dado. Una prueba de detección común es la mamografía, pero no es perfecta.
+
+--
+
+- En aproximadamente 11% de las pacientes con cáncer de mama, la prueba da un .hi[falso negativo].
+- La prueba da un .hi[falso positivo] en 7% de las pacientes que **no** tienen cáncer de mama.
+
+--
+
+Si probamos a una mujer aleatoria mayor de 40 años con una mamografía y el resultado es positivo, ¿cuál es la probabilidad de que la paciente realmente tenga cáncer de mama?
+
+--
+
+$$ P(\text{tiene CM} \mid \text{mamograma}^+) = \dfrac{P(\text{tiene CM y mamograma}^+)}{P(\text{mamograma}^+)} $$
+
+---
+
+```{R, tree cancer}
+tree_cancer <- tibble(
+  Verdad = c("cáncer, 0.0035", "cáncer, 0.0035", "sin cáncer, 0.9965", "sin cáncer, 0.9965"),
+  Mamograma = c("positivo, 0.89", "negativo, 0.11", "positivo, 0.07", "negativo, 0.93"),
+  Conjunta = c(0.0035*0.89, 0.0035*0.11, 0.9965*0.07, 0.9965*0.93)
+)
+tree_cancer
+```
+
+---
+
+$$ P(\text{tiene CM y mamograma}^+) = P(\text{mamograma}^+ \mid \text{tiene CM})P(\text{tiene CM}) $$
+
+$$ P(\text{tiene CM y mamograma}^+) = 0.89\times0.0035=0.00312 $$
+
+$$ P(\text{mamograma}^+) = 0.0035\times0.89 + 0.9965\times0.07 = 0.07288 $$
+
+---
+
+$$ P(\text{tiene CM} \mid \text{mamograma}^+) = \dfrac{0.00312}{0.07288} \approx 0.0428 $$
+
+```{R, ex342}
+(0.0035*0.89) / (0.0035*0.89 + 0.9965*0.07)
+```
+
+Es decir, .hi[aún si una paciente tiene un resultado positivo] en la mamografía, hay solo un .hi[4%] de probabilidad de que realmente tenga cáncer de mama.
+
+--
+
+Este ejemplo destaca por qué los médicos frecuentemente ordenan más pruebas sin importar un primer resultado positivo. Cuando una condición médica es rara, una sola prueba positiva generalmente no es definitiva.
+
+
+---
+
+### Teorema de Bayes: invirtiendo probabilidades
+
+Considera la siguiente probabilidad condicional para variable 1 y variable 2:
+
+$$ P(\text{resultado } A_1 \text{ de variable 1} \mid \text{resultado } B \text{ de variable 2}) $$
+
+El Teorema de Bayes establece que esta probabilidad condicional puede identificarse como la siguiente fracción:
+
+$$ \dfrac{P(B|A_1)P(A_1)}{P(B|A_1)P(A_1) + P(B|A_2)P(A_2) + \cdots + P(B|A_k)P(A_k)} $$
+
+donde $A_2, A_3, \ldots, A_k$ representan todos los demás resultados posibles de la primera variable.
+
+
+---
+layout: true
+# Probabilidad condicional
+
+---
+## Ejemplo
+José visita el campus cada jueves por la noche. Sin embargo, algunos días el estacionamiento está lleno, a menudo por eventos universitarios. Hay eventos académicos en 35% de las noches, eventos deportivos en 20%, y ningún evento en 45%.
+
+--
+
+- Cuando hay un evento académico, el estacionamiento se llena aproximadamente 25% de las veces.
+- Se llena 70% de las noches con eventos deportivos.
+- En noches sin eventos, se llena solo aproximadamente 5% de las veces.
+
+--
+
+Si José llega al campus y encuentra el estacionamiento lleno, ¿cuál es la probabilidad de que haya un evento deportivo?
+
+---
+
+$$ P(A_1)=0.2 \quad P(A_2)=0.35 \quad P(A_3)=0.45 $$
+$$ P(B|A_1)=0.7 \quad P(B|A_2)=0.25 \quad P(B|A_3)=0.05 $$
+
+--
+
+$$ P(A_1|B) = \dfrac{P(B|A_1)P(A_1)}{P(B|A_1)P(A_1)+P(B|A_2)P(A_2)+P(B|A_3)P(A_3)} $$
+
+$$ P(A_1|B) = \dfrac{(0.7)(0.2)}{(0.7)(0.2)+(0.25)(0.35)+(0.05)(0.45)} = 0.56 $$
+
+```{R, ex344}
+num <- 0.7*0.2
+den <- 0.7*0.2 + 0.25*0.35 + 0.05*0.45
+num/den
+```
+
+Basándonos en la información de que el estacionamiento está lleno, hay una probabilidad de .hi[56%] de que haya un evento deportivo esa noche.
+
+
+---
+layout: false
+class: inverse, middle
+
+# Muestreo de una Población (N) Pequeña
+
+---
+layout: true
+# Muestreo de una N pequeña
+---
+
+Cuando muestreamos observaciones de una población, usualmente solo muestreamos una fracción pequeña de los individuos o casos posibles. Sin embargo, a veces nuestro tamaño de muestra es lo bastante grande, o la población lo bastante pequeña, que muestreamos más del .hi[10%] de una población .hi[sin reemplazo] (es decir, no hay posibilidad de muestrear el mismo caso dos veces).
+
+--
+
+Muestrear una fracción notable de una población puede ser importante para cómo analizamos la muestra.
+
+--
+
+**Ejemplo:** Los profesores a veces seleccionan a un estudiante al azar para responder una pregunta. Si cada estudiante tiene la misma probabilidad de ser seleccionado y hay 15 personas en tu clase, ¿cuál es la probabilidad de que te elija para la siguiente pregunta?
+
+---
+
+**Respuesta:** Si hay 15 personas y ninguna falta a clase, la probabilidad es $1/15 \approx 0.067$.
+
+--
+
+**Ejemplo:** Si el profesor hace 3 preguntas, ¿cuál es la probabilidad de que **no** seas seleccionado? Supón que no elegirá a la misma persona dos veces en una clase dada.
+
+--
+
+**Respuesta:** Para la primera pregunta, elegirá a otra persona con probabilidad $14/15$. Para la segunda, si no fuiste elegido antes, la probabilidad de no ser elegido de nuevo es $13/14$. Para la tercera, $12/13$.
+
+$$ P(\text{no elegido en 3 preguntas}) = \dfrac{14}{15}\times\dfrac{13}{14}\times\dfrac{12}{13} = \dfrac{12}{15}=0.80 $$
+
+```{R, ex348}
+(14/15) * (13/14) * (12/13)
+```
+
+---
+
+¿Qué regla nos permitió multiplicar las probabilidades? Fue realmente una probabilidad marginal, $P(Q_1=\text{no elegido})$, seguida de dos probabilidades condicionales—aplicando la .hi[Regla General de la Multiplicación].
+
+--
+
+**Ejemplo:** Se supone que el profesor elige aleatoriamente **sin considerar** a quién ya seleccionó, es decir, los estudiantes pueden ser elegidos más de una vez. ¿Cuál es la probabilidad de no ser elegido en ninguna de las tres preguntas?
+
+--
+
+**Respuesta:** Cada elección es independiente, y la probabilidad de no ser elegido en una pregunta individual es $14/15$. Usamos la Regla de la Multiplicación para procesos independientes:
+
+$$ P(\text{no elegido en 3 preguntas}) = \left(\dfrac{14}{15}\right)^3 = 0.813 $$
+
+---
+
+```{R, ex350}
+(14/15)^3
+```
+
+Tienes una probabilidad ligeramente mayor de no ser elegido comparado con cuando el profesor elige una persona nueva para cada pregunta. Sin embargo, ahora podrías ser elegido más de una vez.
+
+--
+
+Si muestreamos de una población pequeña .hi[sin reemplazo], ya no tenemos independencia entre nuestras observaciones.
+
+--
+
+La probabilidad de no ser elegido en la segunda pregunta estuvo condicionada al evento de no haber sido elegido en la primera. Pero después, el profesor muestreó .hi[con reemplazo]: repetidamente muestreó la clase completa sin importar a quién ya había elegido.
+
+---
+
+**Ejemplo:** Tu departamento organiza una rifa. Venden 30 boletos y ofrecen siete premios.
+
+a. Colocan los boletos en un sombrero y sacan uno para cada premio (sin reemplazo). ¿Probabilidad de ganar un premio si compras un boleto?
+b. ¿Y si los boletos se muestrean con reemplazo?
+
+```{R, gp352}
+1 - (29/30 * 28/29 * 27/28 * 26/27 * 25/26 * 24/25 * 23/24)   # (a) sin reemplazo
+1 - (29/30)^7                                                    # (b) con reemplazo
+```
+
+---
+
+**Solución:** 
+
+(a) $P(\text{ganar}) = 1-23/30 = 7/30 = 0.233$. 
+
+(b) $1-(29/30)^7 = 0.211$.
+
+
+---
+layout: false
+class: inverse, middle
+
+# Variables Aleatorias
+
+---
+layout: true
+# Variables aleatorias
+---
+
+A menudo es útil modelar un proceso usando lo que se llama una .hi[variable aleatoria]. Un modelo así nos permite aplicar un marco matemático y principios estadísticos para entender y predecir mejor resultados en el mundo real.
+
+--
+
+**Ejemplo:** Se asignan dos libros para una clase de estadística: un libro de texto y su guía de estudio. La librería universitaria determinó que 20% de los estudiantes inscritos no compra ninguno de los dos libros, 55% compra solo el libro de texto, y 25% compra ambos libros. Si hay 100 estudiantes inscritos, ¿cuántos libros debería esperar vender la librería a esta clase?
+
+--
+
+**Solución:** Aproximadamente 20 estudiantes no comprarán ningún libro (0 libros), unos 55 comprarán un libro (55 libros ), y aproximadamente 25 comprarán dos libros (50 libros para estos 25 estudiantes). La librería debería esperar vender aproximadamente .hi[105 libros] para esta clase.
+
+```{R, ex354}
+20*0 + 55*1 + 25*2
+```
+
+---
+
+**Ejemplo:** El libro de texto cuesta 137 y la guía de estudio 33. ¿Cuánto ingreso debería esperar la librería de esta clase de 100 estudiantes?
+
+--
+
+**Solución:**
+
+$$ \text{Solo texto: } \$137\times55 = \$7{,}535 $$
+$$ \text{Ambos: } (\$137+\$33)\times25 = \$170\times25=\$4{,}250 $$
+
+```{R, ex356}
+137*55
+170*25
+
+```
+
+---
+
+```{R, ex356b}
+137*55 + 170*25
+```
+
+La librería debería esperar generar aproximadamente $7{,}535+4{,}250=11{,}785$ de estos 100 estudiantes. Sin embargo, podría haber algo de variabilidad muestral.
+
+---
+
+**Ejemplo:** ¿Cuál es el ingreso promedio por estudiante para este curso?
+
+**Solución:** El ingreso total esperado es 11,785, y hay 100 estudiantes. Por lo tanto, el ingreso esperado por estudiante es $11{,}785/100=117.85$.
+
+```{R, ex357, echo = F, fig.height = 4}
+book_dist <- tibble(costo = c(0, 137, 170), prob = c(0.20, 0.55, 0.25))
+ggplot(book_dist, aes(x = factor(costo), y = prob)) +
+  geom_col(fill = "steelblue", width = 0.4) +
+  labs(x = "Costo", y = "Probabilidad") +
+  theme_axes
+```
+
+
+
+---
+layout: true
+# Variables aleatorias
+## Esperanza
+---
+
+Llamamos a una variable o proceso con un resultado numérico una .hi[variable aleatoria], y usualmente la representamos con una letra mayúscula como $X$, $Y$, o $Z$.
+
+### Variable aleatoria
+
+Un proceso o variable aleatorio con un resultado numérico.
+
+--
+
+Los resultados posibles de $X$ se etiquetan con la letra minúscula correspondiente $x$ y subíndices. Escribimos $x_1=0$, $x_2=137$, $x_3=170$, con probabilidades 0.20, 0.55, y 0.25 respectivamente.
+
+---
+
+```{R, dist x}
+dist_x <- tibble(i = 1:3, xi = c(0,137,170), Pxi = c(0.20,0.55,0.25))
+dist_x
+```
+
+**Tabla:** Distribución de probabilidad de $X$.
+
+---
+
+Calculamos el resultado promedio de $X$ como 117.85. A esto lo llamamos el .hi[valor esperado] de $X$, denotado $E(X)$. El valor esperado se calcula sumando cada resultado ponderado por su probabilidad:
+
+$$ E(X) = 0\times0.20 + 137\times0.55 + 170\times0.25 = 117.85 $$
+
+```{R, expected value}
+sum(dist_x$xi * dist_x$Pxi)
+```
+
+### Valor esperado de una variable aleatoria discreta
+
+Si $X$ toma resultados $x_1,\ldots,x_k$ con probabilidades $P(X=x_1),\ldots,P(X=x_k)$, el valor esperado de $X$ es la suma de cada resultado multiplicado por su probabilidad correspondiente:
+
+---
+
+$$ E(X) = \sum_{i=1}^{k} x_i P(X=x_i) $$
+
+La letra griega $\mu$ también puede usarse en lugar de $E(X)$.
+
+--
+
+El valor esperado para una variable aleatoria representa el .hi[resultado promedio]. Por ejemplo, $E(X)=117.85$ representa la cantidad promedio que la librería espera ganar de un solo estudiante.
+
+--
+
+En física, la esperanza tiene el mismo significado que el centro de gravedad. La distribución puede representarse como una serie de pesos en cada resultado, y la media representa el punto de equilibrio.
+
+---
+
+```{R, balance, echo = F, fig.height = 4.5}
+ggplot(book_dist, aes(x = costo, y = 0)) +
+  geom_segment(aes(xend = costo, yend = prob*3), size = 8, color = "steelblue", lineend="round") +
+  geom_vline(xintercept = 117.85, color = red_pink, linetype = "dashed") +
+  annotate("text", x = 117.85, y = -0.1, label = "117.85", color = red_pink, size = 5) +
+  labs(x = "Costo", y = NULL) +
+  theme_axes + theme(axis.text.y = element_blank())
+```
+
+**Gráfico:** Un sistema de pesos representando la distribución de probabilidad de $X$.
+
+---
+layout: true
+# Variables aleatorias
+## Variabilidad de variables aleatorias
+---
+
+Supón que administraras la librería universitaria. Además de cuánto ingreso esperas generar, también querrías saber la .hi[volatilidad] (variabilidad) de tu ingreso.
+
+--
+
+La varianza y la desviación estándar pueden usarse para describir la variabilidad de una variable aleatoria. En el caso de una variable aleatoria, calculamos desviaciones al cuadrado, pero tomamos su .hi[suma ponderada] por sus probabilidades correspondientes.
+
+### Fórmula general de varianza
+
+Si $X$ toma resultados $x_1,\ldots,x_k$ con probabilidades $P(X=x_1),\ldots,P(X=x_k)$ y valor esperado $\mu=E(X)$, la varianza de $X$, denotada $\text{Var}(X)$ o $\sigma^2$, es:
+
+---
+
+$$ \sigma^2 = \sum_{j=1}^{k}(x_j-\mu)^2 P(X=x_j) $$
+
+La desviación estándar de $X$, denotada $\sigma$, es la raíz cuadrada de la varianza.
+
+---
+layout: true
+# Variables aleatorias
+## Ejemplo: Varianza del ingreso de la librería
+---
+
+Calcula el valor esperado, la varianza, y la desviación estándar de $X$, el ingreso de un solo estudiante de estadística para la librería.
+
+**Solución:** Es útil construir una tabla que contenga los cálculos por separado.
+
+```{R, ex358}
+tabla_var <- dist_x %>% mutate(
+  xP = xi * Pxi,
+  dev = xi - sum(xP),
+  dev2 = dev^2,
+  dev2P = dev2 * Pxi
+)
+tabla_var
+(mu <- sum(tabla_var$xP))
+(sigma2 <- sum(tabla_var$dev2P))
+(sigma <- sqrt(sigma2))
+```
+
+---
+
+La varianza de $X$ es $\sigma^2 = 3659.3$, lo que significa que la desviación estándar es $\sigma=\sqrt{3659.3}=60.49$.
+
+```{R, ex358b}
+sqrt(3659.3)
+```
+
+---
+layout: false
+class: inverse, middle
+
+# Distribuciones Continuas
+
+---
+layout: true
+# Distribuciones continuas
+---
+
+Se muestran varios histogramas huecos para las alturas de adultos bolivianos (es una variable numérica .hi[continua].). ¿Cómo cambia el número de agrupaciones (*bins*) nuestra interpretación de los datos?
+
+```{R, height hist, echo = F, fig.height = 5}
+set.seed(1)
+heights <- rnorm(300000, mean = 168, sd = 10)
+p1 <- ggplot(tibble(h=heights), aes(h)) + geom_histogram(bins=8, fill="steelblue", color="white") + labs(x="altura (cm)", y=NULL) + theme_axes
+p2 <- ggplot(tibble(h=heights), aes(h)) + geom_histogram(bins=15, fill="steelblue", color="white") + labs(x="altura (cm)", y=NULL) + theme_axes
+p3 <- ggplot(tibble(h=heights), aes(h)) + geom_histogram(bins=40, fill="steelblue", color="white") + labs(x="altura (cm)", y=NULL) + theme_axes
+p4 <- ggplot(tibble(h=heights), aes(h)) + geom_histogram(bins=100, fill="steelblue", color="white") + labs(x="altura (cm)", y=NULL) + theme_axes
+gridExtra::grid.arrange(p1, p2, p3, p4, nrow = 2)
+```
+
+Histogramas de alturas de adultos con distintos anchos de intervalo.
+
+---
+
+**Solución:** Agregar más intervalos provee mayor detalle. Esta muestra es extremadamente grande, por lo que agrupaciones mucho más pequeños aún funcionan bien. Usualmente no usamos tantos intervalos con muestras más pequeñas, ya que conteos pequeños por intervalos significan que las alturas de las barras son muy volátiles.
+
+--
+
+**Continuación:** ¿Qué proporción de la muestra mide entre 180 y 185 cm?
+
+--
+
+**Solución:** Podemos sumar las alturas de los intervalos en el rango 180–185 cm y dividir entre el tamaño de muestra:
+
+```{R, ex372}
+prop_180_185 <- mean(heights >= 180 & heights < 185)
+prop_180_185
+```
+
+Esta fracción es la misma que la proporción del .hi[área] del histograma que cae en el rango 180 a 185 cm.
+
+---
+layout: true
+# Distribuciones continuas
+
+---
+## De histogramas a distribuciones continuas
+Examina la transición de un histograma hueco de bordes cuadrados a una gráfica mucho más suave. Cuando los contenedores son muy delgados, el histograma hueco empieza a parecerse a una curva suave.
+
+--
+
+Esto sugiere que la altura poblacional, como variable numérica continua, podría explicarse mejor mediante una curva que representa el contorno de contenedores extremadamente delgados.
+
+--
+
+Esta curva suave representa una .hi[función de densidad de probabilidad] (también llamada .hi[densidad] o .hi[distribución]).
+
+---
+
+```{R, density plot, echo = F, fig.height = 4.5}
+ggplot(tibble(h=heights), aes(h)) +
+  geom_histogram(aes(y = after_stat(density)), bins = 40, fill = "steelblue", alpha = 0.3, color = "white") +
+  geom_density(color = "steelblue", size = 1) +
+  labs(x = "altura (cm)", y = NULL) +
+  theme_axes
+```
+
+**Figura:** La distribución continua de probabilidad de las alturas de adultos de Bolivia
+
+--
+
+Una densidad tiene una propiedad especial: el .hi[área total bajo la curva de la densidad es 1].
+
+---
+layout: true
+# Distribuciones continuas
+---
+
+## Probabilidades a partir de dist. continuas
+Calculamos la proporción de individuos con alturas entre 180 y 185 cm:
+
+$$ \dfrac{\text{número de personas entre 180 y 185}}{\text{tamaño total de la muestra}} $$
+
+--
+
+De forma similar, usamos el área bajo la curva para encontrar una probabilidad:
+
+$$ P(\text{altura entre 180 y 185}) = \text{área entre 180 y 185} = 0.0705 $$
+
+```{R, prob height}
+pnorm(185, 168, 10) - pnorm(180, 168, 10)
+```
+
+La probabilidad de que una persona aleatoria mida entre 180 y 185 cm es 0.0705—muy cercana a la estimación del ejemplo anterior.
+
+---
+exclude: true
+
+```{R, print pdfs, echo = F, eval = T}
+pagedown::chrome_print(input = "03-probabilidad.html")
+```
+
