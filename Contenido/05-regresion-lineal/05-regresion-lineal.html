@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Introducción a la Regresión Lineal</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Luis Fernando Escobar — lfernandoescobarc@gmail.com Business School - UAGRM" />
+    <script src="05-regresion-lineal_files/header-attrs/header-attrs.js"></script>
+    <link href="05-regresion-lineal_files/remark-css/default.css" rel="stylesheet" />
+    <link href="05-regresion-lineal_files/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="05-regresion-lineal_files/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="my-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Introducción a la Regresión Lineal
+]
+.subtitle[
+## Diplomado en Economía Aplicada: Estadística Aplicada
+]
+.author[
+### Luis Fernando Escobar — <a href="mailto:lfernandoescobarc@gmail.com" class="email">lfernandoescobarc@gmail.com</a><br>Business School - UAGRM
+]
+.date[
+### Septiembre 2026
+]
+
+---
+
+class: inverse, middle
+
+
+
+# Introducción a la Regresión Lineal
+
+---
+# Contenido
+
+.pseudocode-small[
+
+**1** Ajustando una línea, residuos, y correlación
+
+**2** Regresión de mínimos cuadrados
+
+**3** Tipos de valores atípicos en regresión lineal
+
+**4** Inferencia para la regresión lineal
+
+]
+
+---
+# Introducción
+
+La regresión lineal es una técnica estadística muy poderosa. Muchas personas tienen algo de familiaridad con la regresión solo por leer noticias, donde se sobreponen líneas rectas a diagramas de dispersión.
+
+--
+
+Los modelos lineales pueden usarse para .hi[predicción] o para evaluar si hay una .hi[relación lineal] entre dos variables numéricas.
+
+---
+layout: true
+# Ajuste, residuos, y correlación
+---
+class: inverse, middle
+---
+
+Es útil pensar profundamente en el proceso de ajuste de líneas. En esta sección, definimos la forma de un modelo lineal, exploramos criterios para un buen ajuste, e introducimos un nuevo estadístico llamado .hi[correlación].
+
+---
+layout: true
+
+# Ajustando una línea a los datos
+---
+
+Consideremos lo que significa una relación lineal perfecta: conocemos el valor exacto de `\(y\)` solo con saber el valor de `\(x\)`. Esto es poco realista en casi cualquier proceso natural.
+
+--
+
+La .hi[regresión lineal] es el método estadístico para ajustar una línea a los datos donde la relación entre dos variables, `\(x\)` y `\(y\)`, puede modelarse mediante una línea recta con algo de error:
+
+$$ y = \beta_0+\beta_1x+\varepsilon $$
+
+---
+
+Los valores `\(\beta_0\)` y `\(\beta_1\)` representan los parámetros del modelo, y el error se representa con `\(\varepsilon\)`. Los parámetros se estiman usando datos, y escribimos sus estimaciones puntuales como `\(b_0\)` y `\(b_1\)`. Cuando usamos `\(x\)` para predecir `\(y\)`, llamamos a `\(x\)` la variable .hi[explicativa o predictora], y a `\(y\)` la .hi[respuesta].
+
+--
+
+Es raro que todos los datos caigan perfectamente sobre una línea recta. Es más común que los datos aparezcan como una nube de puntos alrededor de una línea, aunque ninguna observación caiga exactamente sobre ella.
+
+---
+
+Hay casos donde ajustar una línea recta, aun si hay una relación clara entre las variables, no es útil—por ejemplo, cuando la tendencia es claramente .hi[no lineal] (como en un experimento de física introductoria donde la distancia recorrida depende del ángulo de inclinación).
+
+&lt;img src="05-regresion-lineal_files/figure-html/nonlinear-1.png" style="display: block; margin: auto;" /&gt;
+
+**Gráfico:** Un modelo lineal no es útil en este caso no lineal.
+
+---
+layout: true
+# Ajustando una línea a los datos
+## Predecir la longitud de cabeza de zarigüeyas
+---
+
+Las zarigüeyas (marsupiales) que viven en Australia. Investigadores capturaron 104 y tomaron medidas corporales antes de liberarlos. Queremos describir la relación entre la longitud de cabeza y la longitud total de las zarigüeyas usando una línea. Usaremos la longitud total como predictora, `\(x\)`, para predecir la longitud de cabeza, `\(y\)`.
+
+
+
+&lt;img src="05-regresion-lineal_files/figure-html/possum plot-1.png" style="display: block; margin: auto;" /&gt;
+
+**Gráfico:** Un modelo lineal razonable ajustado a la relación
+
+---
+
+La ecuación de la línea ajustada es
+
+$$ \hat{y}=41+0.59x $$
+
+El "sombrerito" en `\(y\)` indica que es una .hi[estimación]. Por ejemplo, para una zarigüeya con longitud total de 80 cm:
+
+$$ \hat{y}=41+0.59\times80=88.2 $$
+
+
+``` r
+41 + 0.59*80
+```
+
+```
+#&gt; [1] 88.2
+```
+
+La ecuación predice que las zarigüeyas con longitud total de 80 cm tendrán una longitud de cabeza .hi[promedio] de 88.2 mm.
+
+---
+
+**Curiosidades:** ¿Qué otras variables podrían ayudar a predecir la longitud de cabeza además de la longitud total?
+
+--
+
+**Solución:** Quizás la relación sería un poco diferente para machos que para hembras, o para zarigüeyas de distintas regiones de Australia. 
+
+---
+layout: true
+
+# Residuos
+---
+
+Los .hi[residuos] son la variación sobrante en los datos después de considerar el ajuste del modelo:
+
+$$ \text{Datos} = \text{Ajuste} + \text{Residuo} $$
+
+--
+
+Cada observación tiene un residuo. Si una observación está por encima de la línea de regresión, su residuo (la distancia vertical de la observación a la línea) es positivo; si está por debajo, es negativo.
+
+--
+
+### Residuo: diferencia entre lo observado y lo esperado
+
+El residuo de la `\(i\)`-ésima observación `\((x_i,y_i)\)` es la diferencia entre la respuesta observada `\((y_i)\)` y la respuesta predicha por el ajuste del modelo `\((\hat{y}_i)\)`:
+
+$$ e_i = y_i-\hat{y}_i $$
+
+---
+
+El ajuste lineal es `\(\hat{y}=41+0.59x\)`. Calcula formalmente el residuo de la observación `\((77.0, 85.3)\)` (marcada "×").
+
+--
+
+**Solución:**
+
+`$$\hat{y}_{\times}=41+0.59\times77.0=86.4 \qquad e_{\times}=85.3-86.4=-1.1$$`
+
+
+``` r
+yhat_x &lt;- 41 + 0.59*77.0
+e_x &lt;- 85.3 - yhat_x
+yhat_x; e_x
+```
+
+```
+#&gt; [1] 86.43
+```
+
+```
+#&gt; [1] -1.13
+```
+
+El error del modelo es `\(e_{\times}=-1.1\)` mm. El residuo negativo indica que el modelo lineal .hi[sobrepredijo] la longitud de cabeza para esta zarigüeya.
+
+---
+
+Si un modelo subestima una observación, ¿el residuo es positivo o negativo? Si sobreestima, es negativo. Si subestima, el residuo (observado menos predicho) es .hi[positivo].
+
+--
+
+Calcula los residuos para `\((85.0, 98.6)\)` y `\((95.5, 94.0)\)`.
+
+
+``` r
+41 + 0.59*85.0
+```
+
+```
+#&gt; [1] 91.15
+```
+
+``` r
+98.6 - (41+0.59*85.0)
+```
+
+```
+#&gt; [1] 7.45
+```
+
+---
+
+
+``` r
+41 + 0.59*95.5
+```
+
+```
+#&gt; [1] 97.345
+```
+
+``` r
+94.0 - (41+0.59*95.5)
+```
+
+```
+#&gt; [1] -3.345
+```
+
+
+**Respuesta:** `\(e_{(+)}=7.45\)` (cerca de la estimación visual de 7); `\(e_{(-)}=-3.3\)` (cerca de -4).
+
+---
+
+Los residuos son útiles para evaluar qué tan bien un modelo lineal se ajusta a un conjunto de datos. A menudo los mostramos en un .hi[diagrama de residuos]: se grafican en su posición horizontal original, pero con la coordenada vertical siendo el residuo—como "voltear" el diagrama de dispersión de modo que la línea de regresión quede horizontal.
+
+&lt;img src="05-regresion-lineal_files/figure-html/residual plot-1.png" style="display: block; margin: auto;" /&gt;
+
+**Gráfico:** Diagrama de residuos para el modelo de las zarigüeyas.
+
+---
+
+Los diagramas de residuos ayudan a identificar patrones que aún persisten tras ajustar un modelo. Examina tres conjuntos de datos con sus modelos lineales y diagramas de residuos: ¿identificas patrones?
+
+--
+
+**Solución:**
+
+- **Primer conjunto:** los residuos no muestran patrones obvios—están dispersos aleatoriamente alrededor de cero.
+- **Segundo conjunto:** hay un patrón en los residuos—curvatura en el diagrama de dispersión, más obvia en el de residuos. .hi[No deberíamos] usar una línea recta para modelar estos datos.
+- **Tercer conjunto:** poca tendencia ascendente, y los residuos tampoco muestran patrones obvios; es razonable intentar un modelo lineal, aunque no está claro si hay evidencia estadísticamente significativa de que la pendiente sea distinta de cero.
+
+---
+layout: true
+# Relaciones lineales con la correlación
+---
+
+Sería útil cuantificar la fuerza de las relaciones lineales con un estadístico.
+
+### Correlación: fuerza de una relación lineal
+
+La correlación, que siempre toma valores entre -1 y 1, describe la fuerza de la relación lineal entre dos variables. La denotamos `\(R\)` o `\(r\)`.
+
+--
+
+&lt;img src="05-regresion-lineal_files/figure-html/correlation examples-1.png" style="display: block; margin: auto;" /&gt;
+
+**Gráfico:** Diagramas de dispersión de ejemplo y sus correlaciones.
+
+---
+
+Solo cuando la relación es perfectamente lineal la correlación es -1 o 1. Si la relación es fuerte y positiva, `\(R\)` está cerca de +1; si es fuerte y negativa, cerca de -1. Si no hay relación lineal aparente, `\(R\)` está cerca de cero. La correlación busca cuantificar la fuerza de una .hi[tendencia lineal]. Tendencias no lineales, aun cuando son fuertes, a veces producen correlaciones que no reflejan la fuerza real de la relación.
+
+&lt;img src="05-regresion-lineal_files/figure-html/nonlinear corr-1.png" style="display: block; margin: auto;" /&gt;
+
+Existe una relación fuerte (no lineal), la correlación es relativamente débil.
+
+
+
+---
+layout: false
+class: inverse, middle
+
+# Regresión de Mínimos Cuadrados (MCO)
+
+---
+layout: true
+# Regresión de mínimos cuadrados
+---
+
+Ajustar modelos lineales "a ojo" está abierto a críticas, ya que se basa en la preferencia individual. En esta sección usamos la .hi[regresión de mínimos cuadrados] como un enfoque más riguroso.
+
+---
+layout: true
+# Regresión de mínimos cuadrados
+
+---
+### Ayuda financiera para estudiantes de primer año en Elmhurst College
+
+Consideramos datos de ingreso familiar y ayuda financiera de una muestra aleatoria de cincuenta estudiantes de primer año de Elmhurst College en Illinois. Los estudiantes con mayores ingresos familiares tendieron a recibir menos ayuda de la universidad.
+
+&lt;img src="05-regresion-lineal_files/figure-html/elmhurst plot-1.png" style="display: block; margin: auto;" /&gt;
+
+**Gráfica:** Diagrama de dispersión entre ayuda financiera e ingreso familiar.
+
+---
+
+**¿La correlación es positiva o negativa?** 
+
+--
+
+Ingresos familiares mayores se asocian con menores montos de ayuda, así que la correlación es .hi[negativa] `\((R=-0.499)\)`.
+
+
+``` r
+cor(elmhurst$income, elmhurst$aid)
+```
+
+```
+#&gt; [1] -0.5270269
+```
+
+---
+layout: true
+# Regresión de mínimos cuadrados
+
+---
+### Una medida objetiva para encontrar la mejor línea
+
+Empezamos pensando en qué queremos decir con "mejor". Matemáticamente, queremos una línea con residuos pequeños. Una primera opción sería minimizar la suma de las magnitudes de los residuos:
+
+$$ |e_1|+|e_2|+\cdots+|e_n| $$
+
+--
+
+Sin embargo, es más común elegir la línea que minimiza la suma de los .hi[residuos al cuadrado]:
+
+$$ e_1^2+e_2^2+\cdots+e_n^2 $$
+
+La línea que minimiza este criterio de mínimos cuadrados se llama comúnmente la .hi[línea de mínimos cuadrados].
+
+---
+
+Tres razones posibles para elegir esta opción:
+
+1. Es el método más comúnmente usado.
+2. Ampliamente soportado en software estadístico.
+3. En muchas aplicaciones, un residuo el doble de grande que otro es .hi[más] que el doble de malo. Elevar al cuadrado los residuos toma en cuenta esta discrepancia.
+
+---
+layout: true
+# Regresión de mínimos cuadrados
+
+---
+### Condiciones para la línea de mínimos cuadrados
+
+Al ajustar una línea de mínimos cuadrados, generalmente requerimos:
+
+--
+
+**Linealidad.** Los datos deben mostrar una tendencia lineal.
+
+--
+
+**Residuos casi normales.** Generalmente los residuos deben ser casi normales. Cuando esta condición no parece razonable, usualmente es por valores atípicos.
+
+--
+
+**Variabilidad constante.** La variabilidad de los puntos alrededor de la línea de mínimos cuadrados permanece aproximadamente constante—el patrón más común de falla es que la variabilidad de `\(y\)` sea mayor cuando `\(x\)` es mayor.
+
+---
+
+**Observaciones independientes.** Ten cuidado al aplicar regresión a datos de series de tiempo (observaciones secuenciales en el tiempo), que pueden tener estructura subyacente que debe considerarse.
+
+--
+
+**¿Deberíamos preocuparnos al aplicar mínimos cuadrados a los datos de Elmhurst?** 
+
+--
+
+**Respuesta:** La tendencia parece lineal, los datos caen alrededor de la línea sin valores atípicos obvios, la varianza es aproximadamente constante, y no son observaciones de series de tiempo. La regresión de mínimos cuadrados puede aplicarse.
+
+---
+layout: true
+# Regresión de mínimos cuadrados
+
+---
+## Encontrando la línea de mínimos cuadrados
+
+Para los datos de Elmhurst, la ecuación de la línea de mínimos cuadrados sería
+
+$$ \widehat{\text{aid}} = \beta_0+\beta_1\times\text{ingreso familiar} $$
+
+--
+
+Se puede encontrar las estimaciones de los parámetros aplicando dos propiedades de la línea de mínimos cuadrados:
+
+- La pendiente puede estimarse por `\(b_1=\dfrac{s_y}{s_x}R\)`, donde `\(R\)` es la correlación y `\(s_x\)`, `\(s_y\)` son las desviaciones estándar muestrales.
+- El punto `\((\bar{x},\bar{y})\)` está sobre la línea de mínimos cuadrados.
+
+---
+
+
+``` r
+elm_stats &lt;- tibble(
+  Variable = c("Ingreso familiar (x)", "Ayuda (y)"),
+  Media = c(101.780, 19.940),
+  DE = c(63.200, 5.460)
+)
+elm_stats
+```
+
+```
+#&gt; # A tibble: 2 × 3
+#&gt;   Variable             Media    DE
+#&gt;   &lt;chr&gt;                &lt;dbl&gt; &lt;dbl&gt;
+#&gt; 1 Ingreso familiar (x) 102.  63.2 
+#&gt; 2 Ayuda (y)             19.9  5.46
+```
+
+**Estadísticas resumen `\((R=-0.499)\)`.**
+
+---
+
+**Calcula la pendiente de la línea de regresión de ayuda contra ingreso familiar.** 
+
+--
+
+**Solución:**
+
+$$ b_1 = \dfrac{s_y}{s_x}R = \dfrac{5.460}{63.200}(-0.499) = -0.0431 $$
+
+
+``` r
+b1_elm &lt;- (5.460/63.200) * (-0.499)
+b1_elm
+```
+
+```
+#&gt; [1] -0.04310981
+```
+
+---
+
+### Identificando la línea de mínimos cuadrados desde estadísticas resumen
+
+- Estima la pendiente, `\(b_1=(s_y/s_x)R\)`.
+- Usando que `\((\bar{x},\bar{y})\)` está en la línea, con la ecuación punto-pendiente: `\(y-\bar{y}=b_1(x-\bar{x})\)`.
+- Simplifica: `\(b_0=\bar{y}-b_1\bar{x}\)`.
+
+---
+
+Usando el punto `\((101780, 19940)\)` y la pendiente `\(b_1=-0.0431\)`, encuentra la línea de mínimos cuadrados.
+
+--
+
+**Solución:**
+
+$$ y-19940 = -0.0431(x-101780) $$
+
+Expandiendo y simplificando:
+
+$$ \widehat{\text{aid}} = 24327 - 0.0431\times\text{ingreso familiar} $$
+
+
+``` r
+b0_elm &lt;- 19940 - b1_elm*101780
+b0_elm
+```
+
+```
+#&gt; [1] 24327.72
+```
+
+---
+
+Un resumen de software para la regresión de Elmhurst:
+
+
+``` r
+tabla_elm &lt;- tibble(
+  " " = c("(Intercept)","family income"),
+  Estimate = c(24319.3, -0.0431),
+  Std_Error = c(1291.5, 0.0108),
+  t_value = c(18.83, -3.98),
+  Pr_t = c("&lt;0.0001", 0.0002)
+)
+tabla_elm
+```
+
+```
+#&gt; # A tibble: 2 × 5
+#&gt;   ` `             Estimate Std_Error t_value Pr_t   
+#&gt;   &lt;chr&gt;              &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;  
+#&gt; 1 (Intercept)   24319.     1292.       18.8  &lt;0.0001
+#&gt; 2 family income    -0.0431    0.0108   -3.98 2e-04
+```
+
+**Resumen de mínimos cuadrados para los datos de Elmhurst.**
+
+---
+
+**Examina las columnas 2, 3, y 4 de la tabla. ¿Qué representan?**
+
+--
+
+**Solución:** 
+
+Usando la fila de `\(\beta_1\)`: la columna 1 da la estimación puntual `\(b_1=-0.0431\)`. 
+
+La columna 2 es el .hi[error estándar] de esa estimación, `\(SE_{b_1}=0.0108\)`. 
+
+La columna 3 es el .hi[estadístico de prueba `\(t\)`] para `\(H_0: \beta_1=0\)`: `\(T=-3.98\)`. 
+
+La última columna es el .hi[valor-*p*] para la prueba de dos colas: 0.0002.
+
+---
+
+**¿Puede una futura estudiante simplemente usar esta ecuación para calcular su ayuda financiera?**
+
+--
+
+**Solución:** Puede usarla como estimación, con matices: los datos provienen de una sola generación de primer año, y las decisiones de ayuda pueden cambiar de año en año. Además, la ecuación provee una estimación imperfecta—ningún estudiante individual será predicho perfectamente.
+
+---
+layout: true
+# Regresión de mínimos cuadrados
+
+---
+## Interpretando las estimaciones de los parámetros del modelo
+
+Las estimaciones para los datos de Elmhurst son `\(b_0=24319\)` y `\(b_1=-0.0431\)`. **¿Qué significan realmente estos números?**
+
+--
+
+**Respuesta:** Por cada Usd1,000 adicional de ingreso familiar, esperaríamos que un estudiante reciba una diferencia neta de `\(1000\times(-0.0431)=-Usd43.10\)` en ayuda, en promedio, es decir, Usd43.10 menos.
+
+
+``` r
+1000 * (-0.0431)
+```
+
+```
+#&gt; [1] -43.1
+```
+
+---
+
+Debemos ser cautelosos: aunque hay una asociación real, no podemos interpretar una .hi[conexión causal] entre las variables, ya que estos datos son observacionales.
+
+--
+
+El intercepto estimado, `\(b_0=24319\)`, describe la ayuda promedio si el ingreso familiar de un estudiante fuera cero—esto tiene significado práctico aquí, ya que algunos estudiantes de Elmhurst sí tienen ingreso familiar de Usd0. En otras aplicaciones, el intercepto puede no tener valor práctico si no hay observaciones cerca de `\(x=0\)`.
+
+---
+
+### Interpretando parámetros estimados por mínimos cuadrados
+
+La pendiente describe la diferencia estimada en `\(y\)` si `\(x\)` fuera una unidad mayor. El intercepto describe el resultado promedio de `\(y\)` si `\(x=0\)` (cuando el modelo lineal es válido hasta ahí).
+
+---
+layout: true
+# Regresión de mínimos cuadrados
+## La extrapolación es traicionera
+---
+
+&gt; "Cuando esas ventiscas golpearon la Costa Este este invierno, quedó demostrado a mi satisfacción que el calentamiento global era un fraude... Considera esto: el 6 de febrero hacían 10 grados. Hoy casi llegó a 80. A este ritmo, para agosto tendremos 220 grados."
+&gt;
+&gt; — Stephen Colbert, 6 de abril de 2010 (sátira)
+
+--
+
+Los modelos lineales pueden aproximar la relación entre dos variables, pero tienen límites reales.
+
+---
+
+**Ejemplo:** Usa `\(\widehat{\text{aid}}=24319-0.0431\times\text{ingreso familiar}\)` para estimar la ayuda de un estudiante cuya familia tiene un ingreso de Usd1,000,000.
+
+--
+
+**Solución:**
+
+$$ 24319-0.0431\times1000000=-18781 $$
+
+
+``` r
+24319 - 0.0431*1000000
+```
+
+```
+#&gt; [1] -18781
+```
+
+El modelo predice ¡-Usd18,781 en ayuda! Sin embargo, Elmhurst no ofrece ayuda negativa. Esto se llama .hi[extrapolación]: aplicar el modelo fuera del rango de los datos originales es apostar de forma poco confiable.
+
+---
+layout: true
+# Regresión de mínimos cuadrados
+
+---
+### Usando `\(R^2\)` para describir la fuerza de un ajuste
+
+Es más común explicar la fuerza de un ajuste lineal usando `\(R^2\)` (R-cuadrada): describe la cantidad de variación en la respuesta que es explicada por la línea de mínimos cuadrados.
+
+--
+
+Para los datos de Elmhurst, la varianza de la ayuda recibida es `\(s^2_{aid}\approx29.8\)` millones. Usando la línea de mínimos cuadrados, la variabilidad en los residuos es `\(s^2_{RES}\approx22.4\)` millones. La reducción es:
+
+`$$\dfrac{s^2_{aid}-s^2_{RES}}{s^2_{aid}} = \dfrac{29{,}800{,}000-22{,}400{,}000}{29{,}800{,}000} = 0.25$$`
+
+
+``` r
+(29.8 - 22.4)/29.8
+```
+
+```
+#&gt; [1] 0.2483221
+```
+
+---
+
+``` r
+(-0.499)^2
+```
+
+```
+#&gt; [1] 0.249001
+```
+
+Esto corresponde exactamente al valor `\(R^2\)`: `\(R=-0.499 \implies R^2=0.25\)`—aproximadamente .hi[25%] de la variación en la ayuda se explica usando el ingreso familiar.
+
+--
+
+Si un modelo tiene una correlación de -0.97, **¿cuánta variación explica?**
+
+
+``` r
+(-0.97)^2
+```
+
+```
+#&gt; [1] 0.9409
+```
+
+**Solución:** `\(R^2=0.94\)`, o .hi[94%].
+
+---
+layout: true
+# Regresión de mínimos cuadrados
+## Predictores categóricos con dos niveles
+---
+
+Las variables categóricas también son útiles para predecir resultados. Consideremos subastas de eBay para el video juego Mario Kart de Nintendo Wii, prediciendo el precio total según la condición del juego (`usado` o `nuevo`).
+
+--
+
+Convertimos la categoría a forma numérica usando una .hi[variable indicadora] llamada `cond_new`, que toma valor 1 cuando el juego es nuevo y 0 cuando es usado:
+
+$$ \widehat{\text{price}} = \beta_0+\beta_1\times\text{cond\_new} $$
+
+---
+
+
+``` r
+tabla_mario &lt;- tibble(" " = c("(Intercept)","cond_new"), Estimate = c(42.87,10.90), Std_Error = c(0.81,1.26), t_value = c(52.67,8.66), Pr_t = c("&lt;0.0001","&lt;0.0001"))
+tabla_mario
+```
+
+```
+#&gt; # A tibble: 2 × 5
+#&gt;   ` `         Estimate Std_Error t_value Pr_t   
+#&gt;   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;  
+#&gt; 1 (Intercept)     42.9      0.81   52.7  &lt;0.0001
+#&gt; 2 cond_new        10.9      1.26    8.66 &lt;0.0001
+```
+
+**Resumen de mínimos cuadrados para el precio final de la subasta contra la condición del juego.**
+
+---
+
+El modelo puede resumirse como
+
+$$ \widehat{\text{price}} = 42.87+10.90\times\text{cond\_new} $$
+
+--
+
+**Interpreta los dos parámetros estimados.**
+
+--
+
+El intercepto es el precio estimado cuando `cond_new`=0 (usado): el precio promedio de venta de un juego usado es .hi[Usd42.87]. La pendiente indica que, en promedio, los juegos nuevos se venden por aproximadamente .hi[Usd10.90 más] que los usados.
+
+---
+
+### Interpretando estimaciones del modelo para predictores categóricos
+
+El intercepto estimado es el valor de la respuesta para la primera categoría (correspondiente al indicador 0). La pendiente estimada es el cambio promedio en la respuesta entre las dos categorías.
+
+--
+
+Para predictores categóricos con solo dos niveles, el supuesto de linealidad siempre se satisface. Sin embargo, debemos evaluar si los residuos en cada grupo son aproximadamente normales y tienen varianza aproximadamente igual.
+
+---
+layout: false
+class: inverse, middle
+
+# Tipos de Valores Atípicos en Regresión Lineal
+
+---
+layout: true
+# Tipos de valores atípicos
+---
+
+En esta sección identificamos criterios para determinar qué valores atípicos son importantes e influyentes. Los .hi[valores atípicos] en regresión son observaciones que caen lejos de la nube de puntos, y pueden tener una fuerte influencia en la línea de mínimos cuadrados.
+
+--
+
+**Ejemplo:** Considera seis diagramas de dispersión con la línea de mínimos cuadrados y sus diagramas de residuos. Para cada par, identifica los valores atípicos y su influencia en la línea.
+
+--
+
+**Solución:** (1) Un valor atípico lejano, pero con influencia leve sobre la línea.
+
+(2) Un valor atípico a la derecha, pero bastante cercano a la línea—no fue muy influyente.
+
+(3) Un punto lejos de la nube que .hi[jala] la línea hacia arriba a la derecha—la línea no ajusta bien la nube principal.
+
+
+---
+
+(4) Una nube secundaria de cuatro valores atípicos que influencia fuertemente la línea, haciendo que ajuste mal casi en todas partes.
+
+(5) No hay tendencia obvia en la nube principal, y el valor atípico a la derecha controla en gran medida la pendiente de la línea.
+
+(6) Un valor atípico lejano, pero cae bastante cerca de la línea—no parece muy influyente.
+
+---
+
+### Apalancamiento (*leverage*)
+
+Los puntos que caen horizontalmente lejos del centro de la nube tienden a "jalar" más fuerte la línea, así que los llamamos puntos de .hi[alto apalancamiento].
+
+--
+
+Si un punto de alto apalancamiento sí invoca su influencia sobre la pendiente de la línea (como en los casos 3, 4, y 5), lo llamamos un .hi[punto influyente]. Usualmente decimos que un punto es influyente si, al ajustar la línea sin él, estaría inusualmente lejos de la línea de mínimos cuadrados.
+
+--
+
+Es tentador eliminar valores atípicos. .hi[No lo hagas sin una muy buena razón.] Los modelos que ignoran casos excepcionales (e interesantes) a menudo se desempeñan mal. Por ejemplo, si una firma financiera ignorara las oscilaciones de mercado más grandes—los "valores atípicos"—pronto quebraría por hacer inversiones mal pensadas.
+
+---
+layout: false
+class: inverse, middle
+
+# Inferencia para la Regresión Lineal
+
+---
+layout: true
+# Inferencia para la regresión lineal
+---
+
+En esta sección discutimos la incertidumbre en las estimaciones de la pendiente y el intercepto de una línea de regresión. Así como identificamos errores estándar para estimaciones puntuales en unidades anteriores, ahora hacemos lo mismo para estas nuevas estimaciones.
+
+---
+layout: true
+# Inferencia para la regresión lineal
+## Elecciones intermedias y desempleo
+---
+
+Las elecciones para miembros de la Cámara de Representantes de EE.UU. ocurren cada dos años, coincidiendo cada cuatro años con la elección presidencial. Las elecciones que ocurren a mitad del periodo presidencial se llaman .hi[elecciones intermedias] (*midterm elections*). Una teoría política sugiere: entre más alta la tasa de desempleo, peor le va al partido del Presidente en las elecciones intermedias.
+
+--
+
+Consideramos cada elección intermedia de 1898 a 2018 (excluyendo las de la Gran Depresión):
+
+`$$\%\text{Var. escaños partido del Presidente} = -7.36-0.89\times(\text{tasa de desempleo})$$`
+
+--
+
+Examinando los datos, no hay desviaciones claras de la linealidad, la condición de varianza constante, o valores atípicos sustanciales.
+
+---
+
+Los datos de la Gran Depresión (1934 y 1938) fueron eliminados porque la tasa de desempleo era 21% y 18%, respectivamente. **¿Estás de acuerdo con eliminarlos?**
+
+--
+
+**Respuesta:** Dos consideraciones: cada uno de estos puntos tendría un apalancamiento muy alto en cualquier línea de mínimos cuadrados, y años con tal desempleo extremo podrían no ayudarnos a entender qué pasaría en años con desempleo solo modestamente alto. Por otro lado, son casos excepcionales, y estaríamos descartando información importante al excluirlos.
+
+---
+
+Hay una pendiente negativa en la línea ajustada. Pero esta pendiente (y el intercepto) son solo estimaciones. ¿Es esto evidencia convincente de que el modelo lineal "verdadero" tiene pendiente negativa?
+
+$$ H_0: \beta_1=0 \qquad H_A: \beta_1\neq0 $$
+
+Rechazaríamos `\(H_0\)` a favor de `\(H_A\)` si los datos proveen evidencia fuerte de que la pendiente verdadera es distinta de cero.
+
+---
+layout: true
+# Inferencia para la regresión lineal
+### Entendiendo la salida de regresión del software
+---
+
+Al igual que otras estimaciones puntuales, podemos calcular un error estándar y estadístico de prueba para `\(b_1\)`. Etiquetamos el estadístico de prueba con `\(T\)`, ya que sigue la distribución *t*.
+
+
+``` r
+tabla_mid &lt;- tibble(" " = c("(Intercept)","unemp"), Estimate = c(-7.3644,-0.8897), Std_Error = c(5.1553,0.8350), t_value = c(-1.43,-1.07), Pr_t = c(0.1646,0.2961))
+tabla_mid
+```
+
+```
+#&gt; # A tibble: 2 × 5
+#&gt;   ` `         Estimate Std_Error t_value  Pr_t
+#&gt;   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
+#&gt; 1 (Intercept)   -7.36      5.16    -1.43 0.165
+#&gt; 2 unemp         -0.890     0.835   -1.07 0.296
+```
+
+Salida de software para el modelo de pérdidas en elecciones intermedias en función del desempleo `\((df=27)\)`.
+
+---
+
+**¿Qué representan la primera y segunda columnas?**
+
+--
+
+**Respuesta:** La primera columna son las estimaciones de mínimos cuadrados, `\(b_0\)` y `\(b_1\)`; la segunda son sus errores estándar.
+
+$$ \hat{y}=-7.3644-0.8897x $$
+
+--
+
+$$ T = \dfrac{-0.8897-0}{0.8350}=-1.07 $$
+
+
+``` r
+T_mid &lt;- -0.8897/0.8350
+T_mid
+```
+
+```
+#&gt; [1] -1.065509
+```
+
+---
+
+Usa la tabla para determinar el valor-*p*.
+
+--
+
+La última columna da el valor-*p* para la prueba de dos colas: .hi[0.2961]. Los datos .hi[no proveen] evidencia convincente de que una tasa de desempleo mayor se corresponda con pérdidas mayores o menores del partido del Presidente.
+
+---
+
+### Inferencia para regresión
+
+Usualmente dependemos del software para identificar estimaciones puntuales, errores estándar, estadísticos de prueba, y valores-*p*. Sin embargo, el software no verifica si el método es apropiado—debemos seguir verificando las condiciones nosotros mismos.
+
+--
+
+Examina los datos de Elmhurst. **¿Qué tan seguro estás de que la pendiente es estadísticamente significativa?**
+
+--
+
+**Respuesta:** Aunque la relación no es perfecta, hay una tendencia decreciente evidente en los datos. Esto sugiere que la prueba de hipótesis rechazará la afirmación nula de que la pendiente es cero.
+
+---
+
+En base a los datos de Elmhurst College en Illinois se va evaluar formalmente `\(H_0\)`: el coeficiente verdadero para ingreso familiar es cero.
+
+--
+
+**Solución:** `\(b_1=-0.0431\)`, `\(SE=0.0108\)`, `\(T=-3.98\)`, valor-*p*=0.0002. El valor-*p* es tan pequeño que .hi[rechazamos `\(H_0\)`] y concluimos que el ingreso familiar y la ayuda financiera están negativamente correlacionados, con la pendiente verdadera efectivamente menor que 0.
+
+---
+layout: true
+# Inferencia para la regresión lineal
+## Intervalo de confianza para un coeficiente
+---
+
+Al igual que podemos hacer una prueba de hipótesis para un coeficiente del modelo usando la salida de regresión, también podemos construir un intervalo de confianza.
+
+--
+
+Calcula el intervalo de confianza del 95% para el coeficiente de ingreso familiar, usando la salida de Elmhurst.
+
+--
+
+**Solución:** Estimación puntual: -0.0431. `\(SE=0.0108\)`. `\(df=48\)`, `\(t^{\star}_{48}=2.01\)`.
+
+
+``` r
+qt(0.975, df = 48)
+```
+
+```
+#&gt; [1] 2.010635
+```
+
+``` r
+-0.0431 - 2.01*0.0108
+```
+
+```
+#&gt; [1] -0.064808
+```
+
+---
+
+
+``` r
+-0.0431 + 2.01*0.0108
+```
+
+```
+#&gt; [1] -0.021392
+```
+
+$$ -0.0431\pm2.01\times0.0108 \to (-0.0648, -0.0214) $$
+
+Estamos 95% seguros de que, por cada dólar adicional de ingreso familiar, se predice que la ayuda de la universidad disminuya, en promedio, entre Usd0.0214 y Usd0.0648.
+
+---
+
+### Intervalos de confianza para coeficientes
+
+`$$b_i \pm t^{\star}_{df}\times SE_{b_i}$$`
+
+donde `\(t^{\star}_{df}\)` corresponde al nivel de confianza con los grados de libertad del modelo.
+
+--
+
+Nos hemos enfoca exclusivamente en intervalos de confianza para parámetros del modelo. Existen otros tipos de intervalos, como intervalos de predicción para un valor de respuesta individual, y de confianza para el valor de respuesta medio.
+
+---
+exclude: true
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
